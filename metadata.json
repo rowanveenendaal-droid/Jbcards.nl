@@ -1,0 +1,7 @@
+{
+  "name": "TCGVault Pro",
+  "description": "Enterprise Pokémon & TCG gamified sales platform with lucky wheel, live hype chat, WhatsApp marketing, SumUp checkout, and Gemini AI card analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

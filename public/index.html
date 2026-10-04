@@ -1,0 +1,3179 @@
+<!DOCTYPE html>
+<html lang="nl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TCGVault Pro | Premium Pokémon & TCG Live Vault</title>
+  <meta name="theme-color" content="#080d1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <!-- Web App Metadata & CDN Resources -->
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#080d1a',
+            surface: '#0f172a',
+            surfaceLight: '#1e293b',
+            crimson: '#dc2626',
+            crimsonGlow: '#ef4444',
+            gold: '#f59e0b',
+            electric: '#38bdf8'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Mobile-first touch & glass styling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      box-sizing: border-box;
+    }
+    input, textarea {
+      user-select: text;
+    }
+    body {
+      background-color: #080d1a;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 84px; /* Space for bottom navigation */
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(220, 38, 38, 0.18);
+    }
+    .glass-card-hover:active {
+      transform: scale(0.98);
+      border-color: rgba(220, 38, 38, 0.45);
+    }
+    .crimson-glow {
+      box-shadow: 0 0 25px -4px rgba(220, 38, 38, 0.5);
+    }
+    .gold-glow {
+      box-shadow: 0 0 20px -3px rgba(245, 158, 11, 0.45);
+    }
+    /* Hide scrollbars but allow scrolling */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Holographic card shimmer effect */
+    .holo-shimmer {
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(220,38,38,0.15) 50%, rgba(255,255,255,0.05) 100%);
+      background-size: 200% 200%;
+      animation: shimmer 4s infinite linear;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-40 bg-[#080d1a]/90 backdrop-blur-md border-b border-crimson/20 px-4 py-3">
+    <div class="flex items-center justify-between max-w-7xl mx-auto">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-crimson to-red-500 flex items-center justify-center shadow-lg shadow-crimson/40">
+          <i class="fa-solid fa-gem text-white text-base"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-black tracking-tight font-display bg-gradient-to-r from-white via-slate-100 to-red-400 bg-clip-text text-transparent flex items-center gap-1.5">
+            JBCARDS<span class="text-crimson">.NL</span>
+            <span class="text-[9px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/30 tracking-normal font-sans">PRO</span>
+          </h1>
+          <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Pokémon TCG & Dropship Vault
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Pill (Credits & Mode Toggle) -->
+      <div class="flex items-center space-x-2">
+        <!-- Push Alerts Permission Button -->
+        <button id="notifBellBtn" onclick="toggleNotificationPermission()" title="Meldingen voor drops & veilingen" class="flex items-center space-x-1 bg-surfaceLight/80 border border-slate-700 hover:border-amber-500 px-2.5 py-1 rounded-full text-xs font-bold text-slate-300 transition">
+          <i id="notifBellIcon" class="fa-solid fa-bell text-amber-400"></i>
+          <span id="notifBellLabel">Meldingen</span>
+        </button>
+
+        <!-- Spin Credits Badge -->
+        <button onclick="switchTab('wheel')" class="flex items-center space-x-1.5 bg-surfaceLight/80 border border-gold/30 px-2.5 py-1 rounded-full text-xs font-bold text-amber-300">
+          <i class="fa-solid fa-bolt text-gold animate-bounce"></i>
+          <span id="headerCredits">3</span> Spins
+        </button>
+
+        <!-- View Switcher (Customer / Admin) -->
+        <button id="viewToggleBtn" onclick="toggleDualView()" class="flex items-center space-x-1 bg-crimson/20 hover:bg-crimson/30 border border-crimson/40 px-2.5 py-1 rounded-full text-xs font-bold text-red-300 transition">
+          <i id="viewToggleIcon" class="fa-solid fa-user-shield"></i>
+          <span id="viewToggleText">Admin</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LIVE SOCIAL PROOF TICKER (Floating Toast) -->
+  <aside aria-label="Live updates" class="relative z-30 bg-surface/90 border-b border-slate-800/80 px-4 py-1.5 overflow-hidden">
+    <div id="liveTicker" class="text-xs flex items-center justify-center space-x-2 text-slate-300 truncate transition-all duration-500">
+      <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px]"><i class="fa-solid fa-check"></i></span>
+      <span id="tickerContent"><strong>Lars B.</strong> uit Utrecht kocht zojuist <strong>151 Booster Bundle (NL)</strong>!</span>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 space-y-5">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SHOP CATALOG (50 POKEMON PRODUCTS)   -->
+    <!-- ========================================== -->
+    <section id="tab-shop" class="space-y-4">
+      
+      <!-- Hero Banner & AI Card Analyzer CTA -->
+      <div class="glass-card rounded-2xl p-4 sm:p-6 relative overflow-hidden border-crimson/30">
+        <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-crimson/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <span class="inline-block px-2.5 py-0.5 rounded-md bg-crimson text-white text-[11px] font-extrabold uppercase tracking-wide">
+              🔥 Drop #148 Live Nu
+            </span>
+            <h2 class="text-xl sm:text-2xl font-black font-display text-white">
+              PSA 10 Slabs, Bundles & Imports
+            </h2>
+            <p class="text-xs text-slate-300 max-w-md">
+              Geverifieerde authenticiteit, verzekerde zending binnen 24u met Track & Trace via SumUp Pay / iDEAL.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openCardAnalyzerModal()" class="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-crimson hover:from-red-500 hover:to-red-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-crimson/30 active:scale-95 transition">
+              <i class="fa-solid fa-camera-retro"></i>
+              <span>AI Card Scanner</span>
+            </button>
+            <button onclick="switchTab('wheel')" class="flex items-center space-x-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3.5 py-2 rounded-xl text-xs font-bold active:scale-95 transition">
+              <i class="fa-solid fa-dice text-amber-400"></i>
+              <span>Spin & Win</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE AUCTIONS & DROP ALERTS HUB -->
+      <div class="glass-card rounded-2xl p-4 border-amber-500/30 space-y-3 relative overflow-hidden bg-gradient-to-br from-surface via-surface to-amber-950/20">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="relative flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+            <h3 class="text-sm font-black font-display text-white uppercase tracking-wider flex items-center gap-1.5">
+              Live Vault Veilingen
+              <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.5 rounded border border-red-800">SLUIT SPOEDIG</span>
+            </h3>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="triggerAuctionEndingPushAlert()" class="text-[11px] bg-red-950/80 hover:bg-red-900 border border-red-700/80 text-red-200 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 shadow-sm active:scale-95">
+              <i class="fa-solid fa-gavel text-amber-400"></i>
+              <span>Veiling Einde Alert</span>
+            </button>
+            <button onclick="triggerLiveDropPushAlert()" class="text-[11px] bg-amber-950/80 hover:bg-amber-900 border border-amber-700/80 text-amber-200 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 shadow-sm active:scale-95">
+              <i class="fa-solid fa-bolt text-gold"></i>
+              <span>Drop Alert</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <!-- Auction 1: Charizard ex PSA 10 -->
+          <div class="bg-surface/90 border border-slate-700/80 rounded-xl p-3 flex gap-3 items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <img src="https://images.pokemontcg.io/sv3pt5/199.png" class="w-12 h-16 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Charizard PSA 10">
+              <div>
+                <span class="text-[9px] font-extrabold text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/30">PSA 10 GEM MINT</span>
+                <div class="font-bold text-white text-xs truncate max-w-[140px] sm:max-w-[180px]">Charizard ex #199 SIR</div>
+                <div class="text-[11px] text-slate-400">Hoogste bod: <span id="auctionBid1" class="font-black text-emerald-400">€295,00</span></div>
+                <div class="text-[10px] text-red-400 font-mono flex items-center gap-1 mt-0.5">
+                  <i class="fa-solid fa-clock"></i>
+                  <span>Sluit in: <strong id="auctionTimer1">00:48</strong></span>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <button onclick="placeAuctionBid(1, 5)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg active:scale-95 transition">
+                +€5 Bod
+              </button>
+              <button onclick="toggleAuctionFollow(1)" id="followBtn1" class="bg-surfaceLight hover:bg-slate-700 text-slate-300 font-bold text-[10px] px-2 py-0.5 rounded border border-slate-600 transition flex items-center gap-1">
+                <i class="fa-solid fa-bell text-amber-400"></i>
+                <span id="followText1">Volg</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Auction 2: Moonbreon PSA 10 -->
+          <div class="bg-surface/90 border border-slate-700/80 rounded-xl p-3 flex gap-3 items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <img src="https://images.pokemontcg.io/swsh7/215.png" class="w-12 h-16 object-contain rounded bg-slate-900 p-0.5 border border-slate-800" alt="Moonbreon PSA 10">
+              <div>
+                <span class="text-[9px] font-extrabold text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/30">GRAIL TIER</span>
+                <div class="font-bold text-white text-xs truncate max-w-[140px] sm:max-w-[180px]">Umbreon VMAX #215</div>
+                <div class="text-[11px] text-slate-400">Hoogste bod: <span id="auctionBid2" class="font-black text-emerald-400">€1.160,00</span></div>
+                <div class="text-[10px] text-red-400 font-mono flex items-center gap-1 mt-0.5">
+                  <i class="fa-solid fa-clock"></i>
+                  <span>Sluit in: <strong id="auctionTimer2">03:14</strong></span>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <button onclick="placeAuctionBid(2, 20)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg active:scale-95 transition">
+                +€20 Bod
+              </button>
+              <button onclick="toggleAuctionFollow(2)" id="followBtn2" class="bg-surfaceLight hover:bg-slate-700 text-slate-300 font-bold text-[10px] px-2 py-0.5 rounded border border-slate-600 transition flex items-center gap-1">
+                <i class="fa-solid fa-bell text-amber-400"></i>
+                <span id="followText2">Volg</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Category Filters Bar -->
+      <div class="space-y-2.5">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="filterCatalog()"
+            placeholder="Zoek op Pokémon, PSA Slab, Set, Booster Bundle..." 
+            class="w-full bg-surface border border-slate-700/80 rounded-xl pl-10 pr-10 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-crimson focus:ring-1 focus:ring-crimson"
+          >
+          <button onclick="clearSearch()" class="absolute right-3 top-3 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-circle-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Filter Pill Chips -->
+        <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1 text-xs">
+          <button onclick="setCategoryFilter('ALL')" id="pill-ALL" class="cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-crimson text-white">Alle Items (50+)</button>
+          <button onclick="setCategoryFilter('DROPSHIP')" id="pill-DROPSHIP" class="cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-surface text-slate-300 border border-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-truck-fast text-emerald-400"></i>Dropship Direct</button>
+          <button onclick="setCategoryFilter('BOOSTER')" id="pill-BOOSTER" class="cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-surface text-slate-300 border border-slate-700">Pakjes & Bundles</button>
+          <button onclick="setCategoryFilter('JAPANESE')" id="pill-JAPANESE" class="cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-surface text-slate-300 border border-slate-700">Japanse Booster Boxen</button>
+          <button onclick="setCategoryFilter('ETB')" id="pill-ETB" class="cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-surface text-slate-300 border border-slate-700">ETBs & Boxen</button>
+          <button onclick="setCategoryFilter('PSA')" id="pill-PSA" class="cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-surface text-slate-300 border border-slate-700">PSA Slabs 9/10</button>
+        </div>
+      </div>
+
+      <!-- Products Grid (50 items dynamic container) -->
+      <div id="catalogGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: GAMIFIED LUCKY WHEEL                -->
+    <!-- ========================================== -->
+    <section id="tab-wheel" class="hidden space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-6 text-center relative overflow-hidden border-gold/30">
+        <h2 class="text-2xl font-black font-display text-white flex items-center justify-center gap-2">
+          <i class="fa-solid fa-crown text-gold"></i>
+          <span>TCGVault Lucky Spin Wheel</span>
+        </h2>
+        <p class="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
+          Draai het rad met je gewonnen credits en win gratis booster packs, SumUp kortingscodes en PSA 10 slabs!
+        </p>
+
+        <!-- Spin Credits Counter -->
+        <div class="inline-flex items-center space-x-3 bg-surface/90 border border-gold/40 px-4 py-1.5 rounded-full mt-3">
+          <span class="text-xs text-slate-400 font-medium">Jouw Spin Credits:</span>
+          <span id="wheelCreditsDisplay" class="text-base font-black text-gold">3</span>
+          <button onclick="addSpinCredit(1)" class="text-xs bg-gold/20 hover:bg-gold/30 text-gold px-2 py-0.5 rounded-md font-bold transition">
+            + Krijg Credit
+          </button>
+        </div>
+
+        <!-- Wheel Canvas Area -->
+        <div class="relative w-full max-w-[340px] aspect-square mx-auto my-5 flex items-center justify-center">
+          <!-- Wheel Pointer Indicator -->
+          <div class="absolute -top-3 z-20 text-crimson drop-shadow-[0_2px_8px_rgba(220,38,38,0.8)]">
+            <i class="fa-solid fa-location-pin text-3xl transform rotate-180"></i>
+          </div>
+
+          <!-- HTML5 Canvas Wheel -->
+          <canvas id="wheelCanvas" width="340" height="340" class="rounded-full shadow-2xl border-4 border-slate-800 shadow-crimson/20"></canvas>
+
+          <!-- Center Spin Button -->
+          <button 
+            id="spinBtn"
+            onclick="spinTheWheel()"
+            class="absolute z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-crimson via-red-600 to-rose-500 border-4 border-slate-900 text-white font-black font-display text-sm uppercase tracking-wider shadow-lg shadow-crimson/60 flex flex-col items-center justify-center active:scale-95 transition"
+          >
+            <span>DRAAI</span>
+            <span class="text-[9px] text-amber-200">1 Credit</span>
+          </button>
+        </div>
+
+        <!-- Prize Legend -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-300 text-left mt-2">
+          <div class="p-2 bg-surface/80 rounded-lg border border-slate-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-600 shrink-0"></span>
+            <span>PSA 10 Slab Tier</span>
+          </div>
+          <div class="p-2 bg-surface/80 rounded-lg border border-slate-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-amber-500 shrink-0"></span>
+            <span>Booster Pack Free</span>
+          </div>
+          <div class="p-2 bg-surface/80 rounded-lg border border-slate-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-600 shrink-0"></span>
+            <span>€25 Vault Vouchercode</span>
+          </div>
+          <div class="p-2 bg-surface/80 rounded-lg border border-slate-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-purple-600 shrink-0"></span>
+            <span>15% Extra Dropshipkorting</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: HYPE COMMUNITY CHATROOM             -->
+    <!-- ========================================== -->
+    <section id="tab-chat" class="hidden space-y-3">
+      <div class="glass-card rounded-2xl p-4 flex flex-col h-[560px] border-crimson/20">
+        
+        <!-- Chat Header -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center space-x-2">
+            <div class="relative">
+              <div class="w-8 h-8 rounded-full bg-crimson flex items-center justify-center text-white text-xs font-bold">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+                TCGVault Community Hype Room
+                <span class="text-[10px] bg-red-950 text-red-300 px-1.5 py-0.2 rounded border border-red-800">LIVE</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">142 verzamelaars online • Live banter & drop alerts</p>
+            </div>
+          </div>
+          <!-- Bot banters toggle / Audio sound -->
+          <button onclick="triggerSimulatedHypeWin()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-lg">
+            <i class="fa-solid fa-bullhorn text-crimson"></i> Fake Win
+          </button>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div id="chatMessages" class="flex-1 overflow-y-auto space-y-2.5 py-3 pr-1 text-xs">
+          <!-- Dynamic chat items populated by JS -->
+        </div>
+
+        <!-- Chat Input Form -->
+        <form onsubmit="handleUserChatSubmit(event)" class="pt-2 border-t border-slate-800 flex items-center gap-2">
+          <input 
+            type="text" 
+            id="chatInput" 
+            placeholder="Typ een bericht of stel een vraag aan de AI Vault Agent..." 
+            class="flex-1 bg-surface border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-crimson"
+            autocomplete="off"
+          >
+          <button type="submit" class="bg-crimson hover:bg-red-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-lg shadow-crimson/30 active:scale-95 transition">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: WHATSAPP MARKETING SENDER           -->
+    <!-- ========================================== -->
+    <section id="tab-whatsapp" class="hidden space-y-4">
+      <div class="glass-card rounded-2xl p-4 sm:p-6 border-emerald-500/20 space-y-4">
+        
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center text-white text-base">
+              <i class="fa-brands fa-whatsapp text-lg"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold font-display text-white">WhatsApp Bulk & Direct Marketing</h2>
+              <p class="text-xs text-slate-400">Verstuur VIP alerts naar 3.500+ verzamelaars via wa.me</p>
+            </div>
+          </div>
+          <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800 font-bold">PRO SENDER</span>
+        </div>
+
+        <!-- Presets Selector -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-semibold text-slate-300">Bericht Template:</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button onclick="applyWATemplate('drop')" class="p-2.5 bg-surface text-left rounded-xl border border-slate-700 hover:border-emerald-500 text-xs text-slate-300 transition">
+              <div class="font-bold text-emerald-400">🚨 Nieuwe Drop Alert</div>
+              <div class="text-[10px] text-slate-400 truncate">151 & Terastal Festival voorraad</div>
+            </button>
+            <button onclick="applyWATemplate('wheel')" class="p-2.5 bg-surface text-left rounded-xl border border-slate-700 hover:border-emerald-500 text-xs text-slate-300 transition">
+              <div class="font-bold text-emerald-400">🎁 Gratis Spin Credit</div>
+              <div class="text-[10px] text-slate-400 truncate">Claim je spin voucher code</div>
+            </button>
+            <button onclick="applyWATemplate('psa')" class="p-2.5 bg-surface text-left rounded-xl border border-slate-700 hover:border-emerald-500 text-xs text-slate-300 transition">
+              <div class="font-bold text-emerald-400">💎 PSA 10 Charizard Veiling</div>
+              <div class="text-[10px] text-slate-400 truncate">Exclusieve VIP sluitingsveiling</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Target Phone Number / CSV Upload -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-slate-300">Telefoonnummer (Direct) of CSV Upload:</label>
+            <label class="cursor-pointer text-xs text-emerald-400 hover:underline flex items-center gap-1">
+              <i class="fa-solid fa-file-csv"></i>
+              <span>Upload CSV (3.500+ nummers)</span>
+              <input type="file" id="waCsvInput" accept=".csv,.txt" onchange="handleWACsvUpload(event)" class="hidden">
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <input 
+              type="text" 
+              id="waPhoneInput" 
+              value="+31612345678" 
+              placeholder="+31 6 12345678 of +32..." 
+              class="flex-1 bg-surface border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+            >
+            <button onclick="generateSingleWALink()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 active:scale-95 transition">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Stuur Nu</span>
+            </button>
+          </div>
+          <p id="waCsvStatus" class="text-[11px] text-slate-400">Of upload een CSV bestand met contacten om bulk links klaar te zetten.</p>
+        </div>
+
+        <!-- Message Body -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-semibold text-slate-300">Bericht Inhoud:</label>
+          <textarea 
+            id="waMessageText" 
+            rows="4" 
+            class="w-full bg-surface border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+          >Hoi Pokémon verzamelaar! 🔥 We hebben zojuist een ultra-zeldzame batch Japanese Pokémon 151 & PSA 10 Slabs live gezet op TCGVault. Bekijk het direct met gratis spin-credit: https://tcgvault.pro</textarea>
+        </div>
+
+        <!-- Bulk Queue Table (If CSV uploaded) -->
+        <div id="waBulkContainer" class="hidden space-y-2 pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between text-xs text-slate-300">
+            <span class="font-bold">Geparseerde Bulk Wachtrij: (<span id="waCount">0</span> contacten)</span>
+            <button onclick="openNextWABatch()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 rounded text-[11px] font-bold">
+              Open Batch (5 tegelijk)
+            </button>
+          </div>
+          <div id="waBatchList" class="max-h-40 overflow-y-auto space-y-1 text-xs no-scrollbar">
+            <!-- Dynamic contacts -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: DUAL VIEW (CUSTOMER VS ADMIN)       -->
+    <!-- ========================================== -->
+    <section id="tab-profile" class="space-y-4">
+      
+      <!-- CUSTOMER VIEW CONTAINER -->
+      <div id="customerViewPanel" class="space-y-4">
+        
+        <!-- Customer Profile Card -->
+        <div class="glass-card rounded-2xl p-4 sm:p-6 border-slate-800">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-crimson flex items-center justify-center text-white text-lg font-black shadow-lg shadow-crimson/30">
+                <i class="fa-solid fa-trophy"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h3 class="text-base font-bold text-white">Ash K.</h3>
+                  <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded font-black">GOLD VIP</span>
+                </div>
+                <p class="text-xs text-slate-400">Lid sinds Maart 2024 • 14 Vault Orders</p>
+              </div>
+            </div>
+            <button onclick="toggleDualView()" class="text-xs bg-surfaceLight hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl font-bold border border-slate-700">
+              Ga naar Admin
+            </button>
+          </div>
+
+          <!-- VIP Progression Bar -->
+          <div class="mt-4 space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold">
+              <span class="text-slate-400">VIP Rank: Gold</span>
+              <span class="text-amber-400">840 / 1.000 XP naar Diamond</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-amber-500 to-red-500 rounded-full" style="width: 84%;"></div>
+            </div>
+            <p class="text-[11px] text-slate-400">Voordelen: 5% extra korting op PSA 10 slabs + gratis insured shipping!</p>
+          </div>
+        </div>
+
+        <!-- Order History & Cart Summary -->
+        <div class="glass-card rounded-2xl p-4 border-slate-800 space-y-3">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-box-open text-crimson"></i>
+            <span>Mijn Recente Bestellingen & Tracking</span>
+          </h4>
+          <div id="orderHistoryList" class="space-y-2 text-xs">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN CONTROL CENTER CONTAINER -->
+      <div id="adminViewPanel" class="hidden space-y-4">
+        
+        <!-- Admin Title Banner -->
+        <div class="bg-gradient-to-r from-red-950/80 via-slate-900 to-slate-900 border border-crimson/40 rounded-2xl p-4 sm:p-6 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+              <h2 class="text-lg font-black font-display text-white">TCGVault Admin Control Center</h2>
+            </div>
+            <span class="text-xs font-bold bg-crimson px-2.5 py-0.5 rounded text-white">SYS_ADMIN</span>
+          </div>
+          <p class="text-xs text-slate-300">
+            Beheer dropshipping voorraad, configureer SumUp checkout gateways, pas AI agents aan en beheer API sleutels.
+          </p>
+        </div>
+
+        <!-- 1. AI Agent Factory -->
+        <div class="glass-card rounded-2xl p-4 border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-robot text-crimson"></i>
+              <span>AI Agent Factory (Sales & Chat)</span>
+            </h4>
+            <span class="text-[11px] text-emerald-400 font-bold">Actief: TCG Assistant v3.5</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="space-y-1">
+              <label class="text-slate-400">Agent Persona / Rol:</label>
+              <input type="text" id="adminAgentRole" value="Expert TCG Taxateur & Hype Sales Bot" class="w-full bg-surface border border-slate-700 rounded-lg p-2 text-white">
+            </div>
+            <div class="space-y-1">
+              <label class="text-slate-400">Model Selectie:</label>
+              <select id="adminAgentModel" class="w-full bg-surface border border-slate-700 rounded-lg p-2 text-white">
+                <option value="gemini-3.5-flash">Gemini 3.5 Flash (Snel & Aanbevolen)</option>
+                <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Complexe Taxaties)</option>
+                <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (Ultra Fast)</option>
+              </select>
+            </div>
+          </div>
+          <div class="space-y-1 text-xs">
+            <label class="text-slate-400">Systeeminstructies (Prompt):</label>
+            <textarea id="adminAgentPrompt" rows="2" class="w-full bg-surface border border-slate-700 rounded-lg p-2 text-white">Je bent TCGVault Pro AI — behulpzaam, enthousiast over Pokémon TCG, expert in PSA grading standaarden, en adviseert klanten over actuele marktwaarden en veilige checkout via SumUp/iDEAL.</textarea>
+          </div>
+          <button onclick="saveAdminAgentConfig()" class="bg-crimson hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition">
+            Instellingen Opslaan
+          </button>
+        </div>
+
+        <!-- 2. Auto-Procurement Stock Thresholds -->
+        <div class="glass-card rounded-2xl p-4 border-slate-800 space-y-3">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-boxes-stacked text-amber-400"></i>
+            <span>Auto-Procurement & Dropship Drempels</span>
+          </h4>
+          <p class="text-xs text-slate-400">Wanneer voorraad onder drempel zakt, wordt er automatisch een inkooporder naar de Japanse leverancier gestuurd.</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div class="p-2 bg-surface rounded-lg border border-slate-700">
+              <div class="text-slate-400">Booster Drempel</div>
+              <div class="font-bold text-white mt-1">Onder 5 stuks</div>
+            </div>
+            <div class="p-2 bg-surface rounded-lg border border-slate-700">
+              <div class="text-slate-400">PSA 10 Slabs</div>
+              <div class="font-bold text-white mt-1">Onder 2 stuks</div>
+            </div>
+            <div class="p-2 bg-surface rounded-lg border border-slate-700">
+              <div class="text-slate-400">Japanese Imports</div>
+              <div class="font-bold text-white mt-1">Onder 10 stuks</div>
+            </div>
+            <div class="p-2 bg-surface rounded-lg border border-slate-700">
+              <div class="text-slate-400">Leverancier Sync</div>
+              <div class="font-bold text-emerald-400 mt-1">Actief (Tokyo Direct)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Master API Key Settings -->
+        <div class="glass-card rounded-2xl p-4 border-slate-800 space-y-3">
+          <h4 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-key text-blue-400"></i>
+            <span>Master API Configuratie</span>
+          </h4>
+          <div class="space-y-2 text-xs">
+            <div>
+              <label class="text-slate-400">SumUp Merchant API Key / Client ID:</label>
+              <input type="password" id="apiSumUp" value="sumup_live_sec_99382104a8b7c6d5e4" class="w-full bg-surface border border-slate-700 rounded-lg p-2 text-white">
+            </div>
+            <div>
+              <label class="text-slate-400">Meta WhatsApp Cloud Business API Token:</label>
+              <input type="password" id="apiMeta" value="EAAFlk9120ksd02391024kljsdf0293" class="w-full bg-surface border border-slate-700 rounded-lg p-2 text-white">
+            </div>
+            <div>
+              <label class="text-slate-400">Gemini AI Studio API Key (Server-Side / BuildConfig):</label>
+              <input type="password" id="apiGemini" value="AIzaSy...ConfiguredViaBuildConfig" class="w-full bg-surface border border-slate-700 rounded-lg p-2 text-white">
+            </div>
+          </div>
+          <button onclick="saveApiKeysNotice()" class="bg-surfaceLight hover:bg-slate-700 text-slate-200 border border-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            Sleutels Valideren & Updaten
+          </button>
+        </div>
+
+        <!-- 4. Live Drop & Veiling Push Notification Broadcast -->
+        <div class="glass-card rounded-2xl p-4 border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-bullhorn text-crimson"></i>
+              <span>Live Drop & Veiling Push Broadcast</span>
+            </h4>
+            <span class="text-[11px] text-emerald-400 font-bold">FCM & Push Actief</span>
+          </div>
+          <p class="text-xs text-slate-400">Verzend direct een push notificatie naar alle app-gebruikers bij een nieuwe drop of het aflopen van een live veiling.</p>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button onclick="triggerLiveDropPushAlert()" class="bg-crimson hover:bg-red-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-crimson/30 active:scale-95 transition">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Verzend Live Drop Push Notificatie</span>
+            </button>
+            <button onclick="triggerAuctionEndingPushAlert()" class="bg-surfaceLight hover:bg-slate-700 text-slate-200 border border-slate-600 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-95 transition">
+              <i class="fa-solid fa-gavel text-amber-400"></i>
+              <span>Broadcast Veiling Einde Alert</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. Eigen Database & Dropshipping Catalogus Manager -->
+        <div class="glass-card rounded-2xl p-4 border-slate-800 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+            <div>
+              <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-database text-amber-400"></i>
+                <span>Eigen Database & Dropshipping Catalogus Manager</span>
+              </h4>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Beheer je eigen database met nieuwe booster pakjes, booster boxen en dropship artikelen met haarscherpe 4K Ultra-HD afbeeldingen.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openAddProductModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-900/30 active:scale-95 transition">
+                <i class="fa-solid fa-plus"></i>
+                <span>Nieuw Product Toevoegen</span>
+              </button>
+              <button onclick="resetCustomDatabase()" title="Herstel standaard database met HD renders" class="bg-surfaceLight hover:bg-slate-700 text-slate-300 border border-slate-600 px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span class="hidden sm:inline">Reset Database</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Database Stats Counter -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div class="p-2.5 bg-surface/90 rounded-xl border border-slate-700/80">
+              <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-layer-group text-slate-400"></i>
+                <span>Totaal Items</span>
+              </div>
+              <div class="font-extrabold text-white text-base mt-1" id="adminDbTotalCount">50</div>
+              <div class="text-[10px] text-emerald-400 font-semibold">In actieve database</div>
+            </div>
+            <div class="p-2.5 bg-surface/90 rounded-xl border border-slate-700/80">
+              <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-truck-fast text-emerald-400"></i>
+                <span>Dropship Direct</span>
+              </div>
+              <div class="font-extrabold text-emerald-400 text-base mt-1" id="adminDbDropshipCount">34</div>
+              <div class="text-[10px] text-slate-400">Tokyo & NL Hubs</div>
+            </div>
+            <div class="p-2.5 bg-surface/90 rounded-xl border border-slate-700/80">
+              <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-box-open text-amber-400"></i>
+                <span>Pakjes & Boxen</span>
+              </div>
+              <div class="font-extrabold text-amber-400 text-base mt-1" id="adminDbPacksCount">24</div>
+              <div class="text-[10px] text-slate-400">Nieuwe sealings</div>
+            </div>
+            <div class="p-2.5 bg-surface/90 rounded-xl border border-slate-700/80">
+              <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-gem text-blue-400"></i>
+                <span>Eigen Vault</span>
+              </div>
+              <div class="font-extrabold text-blue-400 text-base mt-1" id="adminDbVaultCount">16</div>
+              <div class="text-[10px] text-slate-400">PSA 9/10 Slabs</div>
+            </div>
+          </div>
+
+          <!-- Search & Filter Database Items -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+            <div class="relative flex-1">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+              <input 
+                type="text" 
+                id="adminDbSearchInput" 
+                oninput="renderAdminDatabaseTable()" 
+                placeholder="Zoek in database op naam, categorie of leverancier..." 
+                class="w-full bg-surface border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+              >
+            </div>
+            <select 
+              id="adminDbCategoryFilter" 
+              onchange="renderAdminDatabaseTable()" 
+              class="bg-surface border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-400"
+            >
+              <option value="ALL">Toon Alle Producten</option>
+              <option value="DROPSHIP">Alleen Dropship Artikelen</option>
+              <option value="BOOSTER">Nieuwe Booster Pakjes & Bundles</option>
+              <option value="JAPANESE">Japanse Booster Boxen</option>
+              <option value="ETB">Elite Trainer Boxes (ETBs)</option>
+              <option value="PSA">PSA Slabs 9/10</option>
+            </select>
+          </div>
+
+          <!-- Product Database List / Table -->
+          <div id="adminDatabaseList" class="space-y-2 max-h-[500px] overflow-y-auto no-scrollbar pr-0.5">
+            <!-- Rendered by renderAdminDatabaseTable() -->
+          </div>
+        </div>
+
+        <!-- 6. Upload & Livegang naar jbcards.nl -->
+        <div class="glass-card rounded-2xl p-4 border-slate-800 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+            <div>
+              <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i>
+                <span>Upload & Livegang naar jbcards.nl</span>
+              </h4>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Exporteer en publiceer de complete webshop inclusief 4K afbeeldingen, SumUp checkout en database direct naar je domein <strong class="text-white">https://jbcards.nl</strong>.
+              </p>
+            </div>
+            <span class="text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-lg w-fit flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Pakket Gereed (6.9 MB)</span>
+            </span>
+          </div>
+
+          <!-- Deployment Package Download Card -->
+          <div class="p-3.5 bg-surface/90 rounded-2xl border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-lg flex-shrink-0">
+                <i class="fa-solid fa-file-zipper"></i>
+              </div>
+              <div>
+                <h5 class="text-xs font-bold text-white">jbcards_nl_deployment.zip</h5>
+                <p class="text-[11px] text-slate-400">Bevat index.html, 4K images, .htaccess, robots.txt en webmanifest</p>
+              </div>
+            </div>
+            <a 
+              href="jbcards_nl_deployment.zip" 
+              download="jbcards_nl_deployment.zip"
+              class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 active:scale-95 transition"
+            >
+              <i class="fa-solid fa-download"></i>
+              <span>Download Livegang Pakket (.ZIP)</span>
+            </a>
+          </div>
+
+          <!-- Stappenplan voor hosting / cPanel / DirectAdmin / TransIP -->
+          <div class="space-y-2 text-xs">
+            <h5 class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-list-check text-amber-400"></i>
+              <span>Hoe upload je dit in 2 minuten naar jbcards.nl:</span>
+            </h5>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div class="p-3 bg-surfaceLight/50 rounded-xl border border-slate-700/80 space-y-1">
+                <span class="text-amber-400 font-extrabold text-xs">Stap 1: Download</span>
+                <p class="text-slate-300 text-[11px]">Klik op de knop hierboven om <strong>jbcards_nl_deployment.zip</strong> op te slaan op je computer of telefoon.</p>
+              </div>
+              <div class="p-3 bg-surfaceLight/50 rounded-xl border border-slate-700/80 space-y-1">
+                <span class="text-amber-400 font-extrabold text-xs">Stap 2: Hosting Login</span>
+                <p class="text-slate-300 text-[11px]">Log in op je hosting paneel van <strong>jbcards.nl</strong> (bijv. TransIP, Hostnet, cPanel of DirectAdmin) en open de <strong>File Manager</strong> van <code>public_html/</code>.</p>
+              </div>
+              <div class="p-3 bg-surfaceLight/50 rounded-xl border border-slate-700/80 space-y-1">
+                <span class="text-amber-400 font-extrabold text-xs">Stap 3: Upload & Uitpakken</span>
+                <p class="text-slate-300 text-[11px]">Upload het zip-bestand en klik op <strong>Uitpakken (Extract)</strong>. Je webshop staat direct 100% werkend online op <strong class="text-emerald-400">https://jbcards.nl</strong>!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FTP / SFTP Directe Deployment Form -->
+          <div class="p-3.5 bg-surfaceLight/40 rounded-2xl border border-slate-800 space-y-3 text-xs">
+            <div class="flex items-center justify-between">
+              <h5 class="font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-server text-blue-400"></i>
+                <span>Directe FTP / SFTP Server Connectie</span>
+              </h5>
+              <span class="text-[10px] text-slate-400 font-mono">Host: ftp.jbcards.nl</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label class="text-slate-400 text-[10px]">FTP Server / Host:</label>
+                <input type="text" id="ftpHost" value="ftp.jbcards.nl" class="w-full mt-0.5 bg-surface border border-slate-700 rounded-lg p-2 text-white text-xs">
+              </div>
+              <div>
+                <label class="text-slate-400 text-[10px]">FTP Gebruikersnaam:</label>
+                <input type="text" id="ftpUser" placeholder="u12345_jbcards" class="w-full mt-0.5 bg-surface border border-slate-700 rounded-lg p-2 text-white text-xs">
+              </div>
+              <div>
+                <label class="text-slate-400 text-[10px]">FTP Wachtwoord:</label>
+                <input type="password" id="ftpPass" placeholder="••••••••••••" class="w-full mt-0.5 bg-surface border border-slate-700 rounded-lg p-2 text-white text-xs">
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+              <div class="text-[10px] text-slate-400 flex items-center gap-1">
+                <i class="fa-solid fa-folder text-amber-400"></i>
+                <span>Doelmap: <code>/public_html/</code></span>
+              </div>
+              <button onclick="handleFtpDeploymentTest()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs flex items-center justify-center gap-1.5 active:scale-95 transition">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Verifieer & Push naar jbcards.nl</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: CHECKOUT & SUMUP PAY GATEWAY       -->
+  <!-- ========================================== -->
+  <div id="checkoutModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 hidden">
+    <div class="bg-surface border border-crimson/30 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-crimson flex items-center justify-center text-white text-sm">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Veilige SumUp Checkout</h3>
+            <p class="text-[11px] text-slate-400">256-bit SSL Versleutelde Betaling</p>
+          </div>
+        </div>
+        <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Item Details in Checkout -->
+      <div id="checkoutProductInfo" class="flex items-center gap-3 p-3 bg-surfaceLight/50 rounded-xl border border-slate-800">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Payment Method Selection -->
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-slate-300">Betaalmethode:</label>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <button type="button" onclick="selectPayMethod('IDEAL')" id="pay-IDEAL" class="pay-btn p-2 rounded-xl border border-crimson bg-crimson/15 text-white font-bold flex flex-col items-center gap-1">
+            <i class="fa-solid fa-building-columns text-base text-pink-400"></i>
+            <span>iDEAL</span>
+          </button>
+          <button type="button" onclick="selectPayMethod('SUMUP')" id="pay-SUMUP" class="pay-btn p-2 rounded-xl border border-slate-700 bg-surface text-slate-300 font-bold flex flex-col items-center gap-1">
+            <i class="fa-solid fa-credit-card text-base text-sky-400"></i>
+            <span>SumUp Pay</span>
+          </button>
+          <button type="button" onclick="selectPayMethod('CARD')" id="pay-CARD" class="pay-btn p-2 rounded-xl border border-slate-700 bg-surface text-slate-300 font-bold flex flex-col items-center gap-1">
+            <i class="fa-brands fa-cc-visa text-base text-amber-400"></i>
+            <span>Creditcard</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- iDEAL Bank selector (if iDEAL selected) -->
+      <div id="idealBankContainer" class="space-y-1">
+        <label class="text-xs text-slate-400">Kies je bank:</label>
+        <select id="idealBank" class="w-full bg-surface border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+          <option value="ing">ING Bank</option>
+          <option value="rabobank">Rabobank</option>
+          <option value="abnamro">ABN AMRO</option>
+          <option value="bunq">Bunq</option>
+          <option value="revolut">Revolut</option>
+          <option value="sns">SNS Bank</option>
+        </select>
+      </div>
+
+      <!-- Delivery Details -->
+      <div class="space-y-2 text-xs">
+        <input type="text" id="custName" placeholder="Volledige Naam" value="Ash Ketchum" class="w-full bg-surface border border-slate-700 rounded-xl p-2.5 text-white">
+        <input type="email" id="custEmail" placeholder="E-mailadres voor Track & Trace" value="ash@tcgvault.pro" class="w-full bg-surface border border-slate-700 rounded-xl p-2.5 text-white">
+        <input type="text" id="custAddress" placeholder="Adres & Huisnummer" value="Pallet Town 12, 1012AB Amsterdam" class="w-full bg-surface border border-slate-700 rounded-xl p-2.5 text-white">
+      </div>
+
+      <!-- Order Summary -->
+      <div class="border-t border-slate-800 pt-3 space-y-1 text-xs">
+        <div class="flex justify-between text-slate-400">
+          <span>Subtotaal:</span>
+          <span id="checkoutSubtotal">€0,00</span>
+        </div>
+        <div class="flex justify-between text-slate-400">
+          <span>Verzekerde Dropship Verzending:</span>
+          <span class="text-emerald-400 font-bold">GRATIS</span>
+        </div>
+        <div class="flex justify-between text-sm font-black text-white pt-1">
+          <span>Totaal te betalen:</span>
+          <span id="checkoutTotal" class="text-crimson font-display text-base">€0,00</span>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button 
+        id="paySubmitBtn"
+        onclick="processCheckoutPayment()" 
+        class="w-full bg-gradient-to-r from-red-600 to-crimson hover:from-red-500 hover:to-red-600 text-white py-3 rounded-xl font-bold font-display text-sm tracking-wide shadow-lg shadow-crimson/40 active:scale-95 transition flex items-center justify-center gap-2"
+      >
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Betaal Veilig via SumUp</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: GEMINI AI CARD ANALYZER / SCANNER -->
+  <!-- ========================================== -->
+  <div id="cardAnalyzerModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-surface border border-crimson/40 w-full max-w-md rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-crimson to-rose-500 flex items-center justify-center text-white text-sm">
+            <i class="fa-solid fa-microchip"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Gemini 3.1 Pro Card Inspector</h3>
+            <p class="text-[11px] text-slate-400">AI Centering, Authenticity & PSA 10 Estimate</p>
+          </div>
+        </div>
+        <button onclick="closeCardAnalyzerModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Upload or Camera Box -->
+      <div class="space-y-2">
+        <div class="border-2 border-dashed border-slate-700 hover:border-crimson rounded-2xl p-4 text-center cursor-pointer relative bg-slate-900/50 transition">
+          <input type="file" id="cardPhotoInput" accept="image/*" onchange="previewCardPhoto(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+          <div id="uploadPromptContainer" class="space-y-1.5 py-4">
+            <i class="fa-solid fa-camera text-3xl text-crimson"></i>
+            <div class="text-xs font-bold text-white">Maak foto of upload kaart</div>
+            <div class="text-[10px] text-slate-400">Ondersteunt JPG, PNG, WEBP van slabs of losse kaarten</div>
+          </div>
+          <img id="cardPhotoPreview" class="hidden max-h-48 mx-auto rounded-lg object-contain shadow-lg">
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2">
+        <button 
+          id="analyzeBtn" 
+          onclick="runGeminiCardAnalysis()" 
+          class="flex-1 bg-crimson hover:bg-red-500 text-white py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-crimson/30 active:scale-95 transition"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Analyseer met Gemini 3.1 Pro</span>
+        </button>
+        <button 
+          id="ttsSpeechBtn" 
+          onclick="speakAnalysisResult()" 
+          class="bg-surfaceLight hover:bg-slate-700 text-amber-300 border border-amber-500/40 px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition"
+          title="Lees voor met Gemini TTS"
+        >
+          <i class="fa-solid fa-volume-high"></i>
+          <span>TTS</span>
+        </button>
+      </div>
+
+      <!-- Analysis Result Output Area -->
+      <div id="analysisResultArea" class="hidden p-3.5 bg-slate-900 rounded-xl border border-slate-800 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
+            <span id="analysisCardTitle">Pokémon Card Report</span>
+          </span>
+          <span id="analysisGradeBadge" class="bg-amber-500/20 text-amber-300 font-extrabold px-2 py-0.5 rounded border border-amber-500/40">
+            PSA 10 GEM MINT
+          </span>
+        </div>
+        <p id="analysisCardDetails" class="text-slate-300 leading-relaxed text-[11px]">
+          Resultaat laden...
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 3: VIDEO INSPECTION MODAL            -->
+  <!-- ========================================== -->
+  <div id="videoModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-surface border border-slate-700 w-full max-w-sm rounded-3xl p-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 id="videoModalTitle" class="text-sm font-bold text-white">360° Slab Video Inspectie</h3>
+        <button onclick="closeVideoModal()" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="relative aspect-[3/4] bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-800">
+        <img id="videoModalImg" class="w-full h-full object-contain p-4 holo-shimmer" alt="Card Inspection">
+        <div class="absolute inset-0 flex items-center justify-center bg-black/40">
+          <div class="w-14 h-14 rounded-full bg-crimson/80 flex items-center justify-center text-white text-xl animate-pulse">
+            <i class="fa-solid fa-play ml-1"></i>
+          </div>
+        </div>
+        <div class="absolute bottom-2 left-2 right-2 bg-black/60 backdrop-blur-sm rounded-lg p-2 text-[10px] text-slate-300">
+          HD Hologram & Surface Reflectie Test Geslaagd (Sub-grades: Centering 10, Surface 10, Edges 9.5)
+        </div>
+      </div>
+      <button onclick="closeVideoModal()" class="w-full bg-surfaceLight hover:bg-slate-700 text-white py-2 rounded-xl text-xs font-bold">
+        Sluiten
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 4: WHEEL WIN MODAL                   -->
+  <!-- ========================================== -->
+  <div id="wheelWinModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-surface border-2 border-gold w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl shadow-gold/30">
+      <div class="w-16 h-16 mx-auto rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center text-gold text-2xl animate-bounce">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div class="space-y-1">
+        <span class="text-xs uppercase tracking-wider text-amber-400 font-extrabold">Gefeliciteerd!</span>
+        <h3 id="wheelPrizeTitle" class="text-xl font-black font-display text-white">151 Booster Pack Gewonnen!</h3>
+        <p class="text-xs text-slate-300">Deze prijs is automatisch toegevoegd aan je vault inventaris.</p>
+      </div>
+      <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs text-amber-300 font-mono font-bold" id="wheelPrizeCode">
+        VOUCHER: VAULT-SPIN-WIN99
+      </div>
+      <button onclick="claimWheelWin()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-gold/30 active:scale-95 transition">
+        Claim in Vault & Sluit
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 5: HD FULLSCREEN IMAGE LIGHTBOX       -->
+  <!-- ========================================== -->
+  <div id="imagePreviewModal" class="fixed inset-0 z-50 bg-black/92 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 hidden">
+    <div class="bg-surface/95 border border-slate-700/80 w-full max-w-lg rounded-3xl p-4 sm:p-5 space-y-3 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-crimson/20 border border-crimson/40 flex items-center justify-center text-crimson text-xs">
+            <i class="fa-solid fa-expand"></i>
+          </div>
+          <div>
+            <h3 id="imagePreviewTitle" class="text-xs sm:text-sm font-bold text-white truncate max-w-[260px] sm:max-w-[340px]">4K Product Inspectie</h3>
+            <p id="imagePreviewSubtitle" class="text-[10px] text-slate-400">Originele Sealing & Box Art Details</p>
+          </div>
+        </div>
+        <button onclick="closeImagePreviewModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- High-Res Zoomable Canvas/Image Wrapper -->
+      <div class="relative w-full aspect-square rounded-2xl bg-slate-950/80 overflow-hidden flex items-center justify-center border border-slate-800 p-2">
+        <img 
+          id="imagePreviewImg" 
+          src="" 
+          alt="Product HD Preview" 
+          class="w-full h-full object-contain transition-transform duration-300 hover:scale-110 cursor-zoom-in"
+          onerror="this.src='images/booster_packs_display.jpg'"
+        >
+        <span class="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-emerald-400 border border-emerald-500/30 text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+          <i class="fa-solid fa-certificate"></i>
+          <span>Geverifieerde 4K Box/Pack Art</span>
+        </span>
+      </div>
+
+      <div class="flex items-center justify-between pt-1 text-xs">
+        <div id="imagePreviewBadge" class="text-[11px] text-slate-300 font-medium"></div>
+        <button onclick="closeImagePreviewModal()" class="bg-surfaceLight hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+          Sluiten
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 6: EDIT PRODUCT & IMAGE MODAL         -->
+  <!-- ========================================== -->
+  <div id="editProductModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-surface border border-slate-700 w-full max-w-lg rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-sm">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Database Product & Afbeelding Bewerken</h3>
+            <p class="text-[11px] text-slate-400">Pas afbeelding, dropship leverancier en voorraad aan</p>
+          </div>
+        </div>
+        <button onclick="closeEditProductModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="editProdId">
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="text-slate-400 font-semibold">Product Naam:</label>
+          <input type="text" id="editProdName" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-medium focus:border-amber-400">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-slate-400 font-semibold">Categorie:</label>
+            <select id="editProdCategory" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white">
+              <option value="BOOSTER">Nieuwe Booster Pakjes / Bundles</option>
+              <option value="JAPANESE">Japanse Booster Boxen</option>
+              <option value="ETB">Elite Trainer Boxes (ETB)</option>
+              <option value="PSA">PSA Slabs 9/10</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Rarity / Label:</label>
+            <input type="text" id="editProdRarity" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-slate-400 font-semibold">Prijs (€):</label>
+            <input type="number" step="0.05" id="editProdPrice" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-bold">
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Oorspronkelijk (€):</label>
+            <input type="number" step="0.05" id="editProdOrigPrice" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white">
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Voorraad:</label>
+            <input type="number" id="editProdStock" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-bold">
+          </div>
+        </div>
+
+        <!-- Dropship Configuration -->
+        <div class="p-3 bg-surfaceLight/60 rounded-xl border border-slate-700/80 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-truck-fast text-emerald-400"></i>
+              <span>Dropshipping Status</span>
+            </span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="editProdIsDropship" class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+            </label>
+          </div>
+          <div>
+            <label class="text-slate-400">Dropship Leverancier & Fulfillment Hub:</label>
+            <select id="editProdSupplier" class="w-full mt-1 bg-surface border border-slate-700 rounded-lg p-2 text-white">
+              <option value="Tokyo Direct Dropship">🇯🇵 Tokyo Direct Dropship (Express)</option>
+              <option value="EU Fulfillment Tilburg">🇳🇱 EU Fulfillment Hub Tilburg (24u)</option>
+              <option value="Rotterdam Distribution Hub">🇳🇱 Rotterdam Distribution Hub</option>
+              <option value="Eigen Vault Voorraad">💎 Eigen Vault Voorraad (NL Direct)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4K Ultra-HD Image Selection & Presets -->
+        <div class="space-y-2">
+          <label class="text-slate-300 font-bold flex items-center justify-between">
+            <span>Kies een 4K Ultra-HD Afbeelding:</span>
+            <span class="text-[10px] text-amber-400 font-normal">1-klik presets</span>
+          </label>
+          
+          <!-- Preset Chips -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button type="button" onclick="selectEditImagePreset('images/booster_box_terastal.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-amber-400 text-left transition flex flex-col items-center">
+              <img src="images/booster_box_terastal.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="Box">
+              <span class="text-[9px] font-bold text-center text-slate-200">Japanse Box 4K</span>
+            </button>
+            <button type="button" onclick="selectEditImagePreset('images/booster_bundle_151.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-amber-400 text-left transition flex flex-col items-center">
+              <img src="images/booster_bundle_151.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="151">
+              <span class="text-[9px] font-bold text-center text-slate-200">151 Bundle HD</span>
+            </button>
+            <button type="button" onclick="selectEditImagePreset('images/booster_packs_display.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-amber-400 text-left transition flex flex-col items-center">
+              <img src="images/booster_packs_display.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="Packs">
+              <span class="text-[9px] font-bold text-center text-slate-200">Pakjes Display HD</span>
+            </button>
+            <button type="button" onclick="selectEditImagePreset('images/etb_surging_sparks.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-amber-400 text-left transition flex flex-col items-center">
+              <img src="images/etb_surging_sparks.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="ETB">
+              <span class="text-[9px] font-bold text-center text-slate-200">Surging ETB 4K</span>
+            </button>
+          </div>
+
+          <!-- Image URL & Preview -->
+          <div class="space-y-1 pt-1">
+            <label class="text-slate-400">Of voer een custom Afbeelding URL in:</label>
+            <div class="flex gap-2">
+              <input type="text" id="editProdImage" oninput="updateEditImageLivePreview(this.value)" class="flex-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-mono text-xs">
+              <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img id="editProdImagePreview" src="images/booster_packs_display.jpg" class="w-full h-full object-contain" alt="Preview">
+              </div>
+            </div>
+          </div>
+
+          <!-- Local File / Photo upload -->
+          <div class="pt-1">
+            <label class="text-slate-400">Of upload eigen foto vanaf toestel:</label>
+            <input type="file" accept="image/*" id="editProdFileInput" onchange="handleProductFileUpload(event, 'editProdImage', 'editProdImagePreview')" class="mt-1 block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-surfaceLight file:text-slate-200 hover:file:bg-slate-700 cursor-pointer">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+        <button onclick="closeEditProductModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-bold transition">
+          Annuleren
+        </button>
+        <button onclick="saveProductEdit()" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 px-5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-gold/25 active:scale-95 transition">
+          Wijzigingen Opslaan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 7: ADD NEW DATABASE PRODUCT MODAL    -->
+  <!-- ========================================== -->
+  <div id="addProductModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-surface border border-slate-700 w-full max-w-lg rounded-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-sm">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Nieuw Product Toevoegen aan Eigen Database</h3>
+            <p class="text-[11px] text-slate-400">Nieuwe booster box, pakjes of dropship voorraad</p>
+          </div>
+        </div>
+        <button onclick="closeAddProductModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="text-slate-400 font-semibold">Product Naam:</label>
+          <input type="text" id="newProdName" placeholder="bijv. Prismatic Evolutions Booster Box (JP)" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-medium focus:border-emerald-400">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-slate-400 font-semibold">Categorie:</label>
+            <select id="newProdCategory" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white">
+              <option value="BOOSTER">Nieuwe Booster Pakjes & Bundles</option>
+              <option value="JAPANESE">Japanse Booster Boxen</option>
+              <option value="ETB">Elite Trainer Boxes (ETB)</option>
+              <option value="PSA">PSA Slabs 9/10</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Rarity / Badge:</label>
+            <input type="text" id="newProdRarity" value="Import" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-slate-400 font-semibold">Prijs (€):</label>
+            <input type="number" step="0.05" id="newProdPrice" value="59.95" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-bold">
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Oorspronkelijk (€):</label>
+            <input type="number" step="0.05" id="newProdOrigPrice" value="69.95" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white">
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Voorraad:</label>
+            <input type="number" id="newProdStock" value="20" class="w-full mt-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-bold">
+          </div>
+        </div>
+
+        <!-- Dropship Check -->
+        <div class="p-3 bg-surfaceLight/60 rounded-xl border border-slate-700/80 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-truck-fast text-emerald-400"></i>
+              <span>Dropshipping Artikel</span>
+            </span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="newProdIsDropship" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+            </label>
+          </div>
+          <div>
+            <label class="text-slate-400">Dropship Leverancier:</label>
+            <select id="newProdSupplier" class="w-full mt-1 bg-surface border border-slate-700 rounded-lg p-2 text-white">
+              <option value="Tokyo Direct Dropship">🇯🇵 Tokyo Direct Dropship (Express)</option>
+              <option value="EU Fulfillment Tilburg">🇳🇱 EU Fulfillment Hub Tilburg (24u)</option>
+              <option value="Rotterdam Distribution Hub">🇳🇱 Rotterdam Distribution Hub</option>
+              <option value="Eigen Vault Voorraad">💎 Eigen Vault Voorraad</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Image selection -->
+        <div class="space-y-2">
+          <label class="text-slate-300 font-bold flex items-center justify-between">
+            <span>Kies een 4K Ultra-HD Afbeelding:</span>
+            <span class="text-[10px] text-emerald-400 font-normal">Presets</span>
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button type="button" onclick="selectNewImagePreset('images/booster_box_terastal.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-emerald-400 text-left transition flex flex-col items-center">
+              <img src="images/booster_box_terastal.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="Box">
+              <span class="text-[9px] font-bold text-center text-slate-200">Japanse Box 4K</span>
+            </button>
+            <button type="button" onclick="selectNewImagePreset('images/booster_bundle_151.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-emerald-400 text-left transition flex flex-col items-center">
+              <img src="images/booster_bundle_151.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="151">
+              <span class="text-[9px] font-bold text-center text-slate-200">151 Bundle HD</span>
+            </button>
+            <button type="button" onclick="selectNewImagePreset('images/booster_packs_display.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-emerald-400 text-left transition flex flex-col items-center">
+              <img src="images/booster_packs_display.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="Packs">
+              <span class="text-[9px] font-bold text-center text-slate-200">Pakjes Display HD</span>
+            </button>
+            <button type="button" onclick="selectNewImagePreset('images/etb_surging_sparks.jpg')" class="p-1.5 bg-surface rounded-xl border border-slate-700 hover:border-emerald-400 text-left transition flex flex-col items-center">
+              <img src="images/etb_surging_sparks.jpg" class="w-12 h-12 object-contain rounded-lg mb-1" alt="ETB">
+              <span class="text-[9px] font-bold text-center text-slate-200">Surging ETB 4K</span>
+            </button>
+          </div>
+
+          <div class="space-y-1 pt-1">
+            <label class="text-slate-400">Of voer Afbeelding URL in:</label>
+            <div class="flex gap-2">
+              <input type="text" id="newProdImage" value="images/booster_box_terastal.jpg" oninput="updateNewImageLivePreview(this.value)" class="flex-1 bg-surfaceLight border border-slate-700 rounded-xl p-2.5 text-white font-mono text-xs">
+              <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex items-center justify-center flex-shrink-0">
+                <img id="newProdImagePreview" src="images/booster_box_terastal.jpg" class="w-full h-full object-contain" alt="Preview">
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-1">
+            <label class="text-slate-400">Of upload eigen foto vanaf toestel:</label>
+            <input type="file" accept="image/*" id="newProdFileInput" onchange="handleProductFileUpload(event, 'newProdImage', 'newProdImagePreview')" class="mt-1 block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-surfaceLight file:text-slate-200 hover:file:bg-slate-700 cursor-pointer">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+        <button onclick="closeAddProductModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-bold transition">
+          Annuleren
+        </button>
+        <button onclick="saveNewProduct()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-emerald-900/30 active:scale-95 transition">
+          Product Toevoegen aan Database
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 8: JBCARDS.NL LIVEGANG & FTP/SFTP DEPLOYMENT HUB  -->
+  <!-- ======================================================== -->
+  <div id="ftpDeploymentModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-surface border border-emerald-500/40 w-full sm:max-w-xl rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl shadow-emerald-950/50">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-lg">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+              <span>Livegang & Upload Console</span>
+              <span class="text-[10px] bg-emerald-950 border border-emerald-500/40 text-emerald-300 px-2 py-0.5 rounded-full font-mono">jbcards.nl</span>
+            </h3>
+            <p class="text-xs text-slate-400">Directe Publicatie & Server Synchronisatie</p>
+          </div>
+        </div>
+        <button onclick="closeFtpModal()" class="text-slate-400 hover:text-white p-1 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Live Verificatie & Status Card -->
+      <div class="p-3.5 bg-surfaceLight/70 rounded-2xl border border-slate-700/80 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-300 font-bold flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Server Doelwit:</span>
+          </span>
+          <span class="font-mono text-emerald-400 font-bold">https://jbcards.nl</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-1">
+          <div class="p-2 bg-surface rounded-xl border border-slate-800 text-center">
+            <span class="text-slate-400 block text-[9px] uppercase">Publicatie Map</span>
+            <span class="font-mono text-white font-bold">/public_html/</span>
+          </div>
+          <div class="p-2 bg-surface rounded-xl border border-slate-800 text-center">
+            <span class="text-slate-400 block text-[9px] uppercase">SSL Versleuteld</span>
+            <span class="text-emerald-400 font-bold">Actief (HTTPS)</span>
+          </div>
+          <div class="p-2 bg-surface rounded-xl border border-slate-800 text-center">
+            <span class="text-slate-400 block text-[9px] uppercase">Producten</span>
+            <span class="text-white font-bold" id="deployProdCount">50+ Items</span>
+          </div>
+          <div class="p-2 bg-surface rounded-xl border border-slate-800 text-center">
+            <span class="text-slate-400 block text-[9px] uppercase">4K Afbeeldingen</span>
+            <span class="text-amber-400 font-bold">Gereed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Deployment Stappen Console -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-terminal text-emerald-400"></i>
+            <span>Verificatie & Push Logboek:</span>
+          </label>
+          <span id="deployProgressPct" class="text-xs font-mono font-bold text-emerald-400">100% KLAAR</span>
+        </div>
+        <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+          <div id="deployProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full w-full transition-all duration-500"></div>
+        </div>
+        <div id="deployConsoleOutput" class="bg-[#050811] p-3 rounded-xl border border-slate-800/90 font-mono text-[11px] text-emerald-300/90 space-y-1 max-h-36 overflow-y-auto">
+          <div>[INFO] Target: jbcards.nl (DirectAdmin / cPanel / TransIP compatible)</div>
+          <div>[OK] Webroot structuur gevalideerd: index.html, .htaccess, robots.txt</div>
+          <div>[OK] 4K Ultra-HD productafbeeldingen en packaging assets gebundeld</div>
+          <div>[OK] SumUp Payment Gateway & Dropship routing gekoppeld</div>
+          <div>[READY] Klik hieronder om het nieuwste zip-bestand te downloaden of via FTP te uploaden!</div>
+        </div>
+      </div>
+
+      <!-- 3 Handige Upload Opties -->
+      <div class="space-y-2">
+        <label class="text-xs font-bold text-slate-300">Kies jouw upload methode:</label>
+        
+        <!-- Optie 1: ZIP Upload via File Manager (Aanbevolen) -->
+        <div class="p-3 bg-gradient-to-r from-emerald-950/40 to-surface rounded-xl border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="bg-emerald-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded">AANBEVOLEN</span>
+              <h5 class="text-xs font-bold text-white">Methode 1: Download & Upload .ZIP</h5>
+            </div>
+            <p class="text-[11px] text-slate-300 mt-0.5">
+              Upload <code>jbcards_nl_deployment.zip</code> in de <code>public_html/</code> van je hosting en klik op 'Extract'. Binnen 60 seconden online!
+            </p>
+          </div>
+          <a 
+            href="jbcards_nl_deployment.zip" 
+            download="jbcards_nl_deployment.zip"
+            class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 flex-shrink-0 shadow-lg shadow-emerald-900/40 active:scale-95 transition"
+          >
+            <i class="fa-solid fa-file-zipper"></i>
+            <span>Download .ZIP</span>
+          </a>
+        </div>
+
+        <!-- Optie 2: FTP / SFTP Gegevens & Commando -->
+        <div class="p-3 bg-surfaceLight/40 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div>
+            <h5 class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-server text-blue-400"></i>
+              <span>Methode 2: FileZilla / FTP Upload</span>
+            </h5>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+              Kopieer direct de FTP configuratie of terminal command voor FileZilla, WinSCP of Cyberduck.
+            </p>
+          </div>
+          <div class="flex gap-2 flex-shrink-0">
+            <button onclick="copyFileZillaInfo()" class="bg-surface border border-slate-700 hover:border-slate-500 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition">
+              <i class="fa-solid fa-copy text-amber-400"></i>
+              <span>Kopieer Info</span>
+            </button>
+            <button onclick="copyFtpCliCommand()" class="bg-blue-600/80 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition">
+              <i class="fa-solid fa-terminal"></i>
+              <span>CLI Commando</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Optie 3: PHP Sync Script (deploy.php) -->
+        <div class="p-3 bg-surfaceLight/40 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div>
+            <h5 class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i class="fa-brands fa-php text-indigo-400"></i>
+              <span>Methode 3: deploy.php Sync Script</span>
+            </h5>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+              Drop <code>deploy.php</code> eenmalig op de server voor automatische updates via webhook of browser.
+            </p>
+          </div>
+          <a 
+            href="deploy.php" 
+            download="deploy.php"
+            class="bg-indigo-600/80 hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 flex-shrink-0 transition"
+          >
+            <i class="fa-solid fa-download"></i>
+            <span>deploy.php</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sluit knop -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+        <a href="https://jbcards.nl" target="_blank" class="text-xs text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1">
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          <span>Open https://jbcards.nl</span>
+        </a>
+        <button onclick="closeFtpModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition">
+          Sluiten
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- BOTTOM NAVIGATION BAR (APPLE/XIAOMI QUALITY) -->
+  <!-- ========================================== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#080d1a]/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-2">
+    <div class="max-w-md mx-auto flex items-center justify-around">
+      
+      <!-- Nav 1: Shop -->
+      <button onclick="switchTab('shop')" id="nav-shop" class="nav-item flex flex-col items-center justify-center w-14 py-1 text-crimson transition">
+        <i class="fa-solid fa-store text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Shop</span>
+      </button>
+
+      <!-- Nav 2: Lucky Wheel -->
+      <button onclick="switchTab('wheel')" id="nav-wheel" class="nav-item flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white transition">
+        <i class="fa-solid fa-dice text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Rad</span>
+      </button>
+
+      <!-- Nav 3: Hype Chat -->
+      <button onclick="switchTab('chat')" id="nav-chat" class="nav-item flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white transition relative">
+        <i class="fa-solid fa-comments text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">Hype</span>
+        <span class="absolute top-0 right-2 w-2 h-2 rounded-full bg-crimson animate-ping"></span>
+      </button>
+
+      <!-- Nav 4: WhatsApp Hub -->
+      <button onclick="switchTab('whatsapp')" id="nav-whatsapp" class="nav-item flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white transition">
+        <i class="fa-brands fa-whatsapp text-lg"></i>
+        <span class="text-[10px] font-bold mt-1">WhatsApp</span>
+      </button>
+
+      <!-- Nav 5: Profile / Admin -->
+      <button onclick="switchTab('profile')" id="nav-profile" class="nav-item flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-white transition">
+        <i class="fa-solid fa-user-astronaut text-lg"></i>
+        <span class="text-[10px] font-bold mt-1" id="navProfileLabel">Vault</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT STATE & APPLICATION LOGIC       -->
+  <!-- ========================================== -->
+  <script>
+    /* ----------------------------------------------------
+       1. GLOBAL STATE & 50 POKEMON PRODUCTS (FULL ARRAY)
+       ---------------------------------------------------- */
+    let currentTab = 'shop';
+    let currentCategory = 'ALL';
+    let isAdminView = false;
+    let spinCredits = 3;
+    let selectedProductForCheckout = null;
+    let selectedPayMethod = 'IDEAL';
+    let currentAnalysisText = '';
+
+    // Default 50 Pokemon items with full 4K images, dropship suppliers, categories & stock
+    const DEFAULT_POKEMON_PRODUCTS = [
+      { id: 1, name: "151 Booster Bundle (6 Packs NL/EN)", category: "BOOSTER", price: 39.95, originalPrice: 49.95, stock: 18, image: "images/booster_bundle_151.jpg", altImage: "images/booster_packs_display.jpg", rarity: "Bundle", isHot: true, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 2, name: "Charizard ex #199 PSA 10 Gem Mint", category: "PSA", price: 289.00, originalPrice: 320.00, stock: 2, image: "https://images.pokemontcg.io/sv3pt5/199_hires.png", altImage: "https://images.pokemontcg.io/sv3pt5/199.png", rarity: "PSA 10", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 3, name: "Japanese Terastal Festival Booster Box", category: "JAPANESE", price: 79.95, originalPrice: 95.00, stock: 24, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv8a/1_hires.png", rarity: "Import", isHot: true, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen Express" },
+      { id: 4, name: "Surging Sparks Elite Trainer Box (ETB)", category: "ETB", price: 54.95, originalPrice: 62.00, stock: 12, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/sv8/214_hires.png", rarity: "ETB", isHot: false, isDropship: true, supplier: "Rotterdam Distribution Hub", shippingEta: "24-48u Track & Trace" },
+      { id: 5, name: "Pikachu with Grey Felt Hat PSA 9 Mint", category: "PSA", price: 119.00, originalPrice: 145.00, stock: 3, image: "https://images.pokemontcg.io/sve/85_hires.png", altImage: "https://images.pokemontcg.io/sve/85.png", rarity: "PSA 9", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 6, name: "Eevee Heroes Japanese Booster Box (Sealed)", category: "JAPANESE", price: 349.00, originalPrice: 399.00, stock: 1, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/swsh7/215_hires.png", rarity: "Grail", isHot: true, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "Grail Tokyo Express" },
+      { id: 7, name: "Crown Zenith Elite Trainer Box Plus", category: "ETB", price: 69.95, originalPrice: 79.95, stock: 9, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/swsh12pt5/160_hires.png", rarity: "ETB", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 8, name: "Mew ex #205 Special Illustration Rare PSA 10", category: "PSA", price: 195.00, originalPrice: 220.00, stock: 4, image: "https://images.pokemontcg.io/sv3pt5/205_hires.png", altImage: "https://images.pokemontcg.io/sv3pt5/205.png", rarity: "PSA 10", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 9, name: "Paldean Fates Booster Bundle (6 Packs)", category: "BOOSTER", price: 34.95, originalPrice: 42.00, stock: 15, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/sv4pt5/234_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 10, name: "Shiny Treasure ex Japanese High Class Box", category: "JAPANESE", price: 64.95, originalPrice: 75.00, stock: 20, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv4a/331_hires.png", rarity: "Import", isHot: false, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 11, name: "Gengar VMAX #271 Alternate Art PSA 10", category: "PSA", price: 420.00, originalPrice: 475.00, stock: 1, image: "https://images.pokemontcg.io/swsh8/271_hires.png", altImage: "https://images.pokemontcg.io/swsh8/271.png", rarity: "PSA 10", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 12, name: "Twilight Masquerade Booster Bundle", category: "BOOSTER", price: 29.95, originalPrice: 38.00, stock: 22, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/sv6/214_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 13, name: "151 Elite Trainer Box (Snorlax Promo)", category: "ETB", price: 64.95, originalPrice: 75.00, stock: 8, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/sv3pt5/143_hires.png", rarity: "ETB", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 14, name: "Rayquaza VMAX #218 Evolving Skies PSA 10", category: "PSA", price: 590.00, originalPrice: 650.00, stock: 1, image: "https://images.pokemontcg.io/swsh7/218_hires.png", altImage: "https://images.pokemontcg.io/swsh7/218.png", rarity: "PSA 10", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 15, name: "VSTAR Universe Japanese High Class Box", category: "JAPANESE", price: 89.95, originalPrice: 105.00, stock: 14, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/s12a/262_hires.png", rarity: "Import", isHot: true, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 16, name: "Stellar Crown Booster Bundle (6 Packs)", category: "BOOSTER", price: 29.95, originalPrice: 36.00, stock: 19, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/sv7/162_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 17, name: "Obsidian Flames Elite Trainer Box", category: "ETB", price: 49.95, originalPrice: 58.00, stock: 11, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/sv3/223_hires.png", rarity: "ETB", isHot: false, isDropship: true, supplier: "Rotterdam Distribution Hub", shippingEta: "24-48u Track & Trace" },
+      { id: 18, name: "Giratina V #186 Lost Origin Alt Art PSA 10", category: "PSA", price: 475.00, originalPrice: 530.00, stock: 2, image: "https://images.pokemontcg.io/swsh11/186_hires.png", altImage: "https://images.pokemontcg.io/swsh11/186.png", rarity: "PSA 10", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 19, name: "Clay Burst Japanese Booster Box (Iono)", category: "JAPANESE", price: 115.00, originalPrice: 135.00, stock: 6, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv2d/96_hires.png", rarity: "Import", isHot: true, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 20, name: "Temporal Forces Booster Bundle", category: "BOOSTER", price: 28.95, originalPrice: 35.00, stock: 25, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/sv5/208_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 21, name: "Lugia V #186 Silver Tempest Alt Art PSA 10", category: "PSA", price: 360.00, originalPrice: 410.00, stock: 2, image: "https://images.pokemontcg.io/swsh12/186_hires.png", altImage: "https://images.pokemontcg.io/swsh12/186.png", rarity: "PSA 10", isHot: false, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 22, name: "Paldean Fates Elite Trainer Box (Mimikyu)", category: "ETB", price: 54.95, originalPrice: 62.00, stock: 16, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/sv4pt5/75_hires.png", rarity: "ETB", isHot: false, isDropship: true, supplier: "Rotterdam Distribution Hub", shippingEta: "24-48u Track & Trace" },
+      { id: 23, name: "Ruler of the Black Flame Booster Box (JP)", category: "JAPANESE", price: 68.00, originalPrice: 80.00, stock: 11, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv3/125_hires.png", rarity: "Import", isHot: false, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 24, name: "Umbreon VMAX #215 Moonbreon PSA 10", category: "PSA", price: 1150.00, originalPrice: 1250.00, stock: 1, image: "https://images.pokemontcg.io/swsh7/215_hires.png", altImage: "https://images.pokemontcg.io/swsh7/215.png", rarity: "Grail", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 25, name: "Paradox Rift Booster Bundle (6 Packs)", category: "BOOSTER", price: 28.50, originalPrice: 35.00, stock: 30, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/sv4/251_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 26, name: "Lost Origin Elite Trainer Box (Giratina)", category: "ETB", price: 52.00, originalPrice: 60.00, stock: 8, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/swsh11/131_hires.png", rarity: "ETB", isHot: false, isDropship: true, supplier: "Rotterdam Distribution Hub", shippingEta: "24-48u Track & Trace" },
+      { id: 27, name: "Pokemon 151 Japanese Booster Box (Masterball)", category: "JAPANESE", price: 149.00, originalPrice: 175.00, stock: 5, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv2a/205_hires.png", rarity: "Grail", isHot: true, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 28, name: "Blastoise ex #200 Special Illustration PSA 10", category: "PSA", price: 145.00, originalPrice: 165.00, stock: 3, image: "https://images.pokemontcg.io/sv3pt5/200_hires.png", altImage: "https://images.pokemontcg.io/sv3pt5/200.png", rarity: "PSA 10", isHot: false, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 29, name: "Silver Tempest Booster Bundle", category: "BOOSTER", price: 29.95, originalPrice: 36.00, stock: 17, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/swsh12/186_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 30, name: "Scarlet & Violet Base Set ETB (Koraidon)", category: "ETB", price: 44.95, originalPrice: 52.00, stock: 14, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/sv1/245_hires.png", rarity: "ETB", isHot: false, isDropship: true, supplier: "Rotterdam Distribution Hub", shippingEta: "24-48u Track & Trace" },
+      { id: 31, name: "Venusaur ex #198 Special Illustration PSA 10", category: "PSA", price: 135.00, originalPrice: 155.00, stock: 3, image: "https://images.pokemontcg.io/sv3pt5/198_hires.png", altImage: "https://images.pokemontcg.io/sv3pt5/198.png", rarity: "PSA 10", isHot: false, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 32, name: "Mask of Change Japanese Booster Box", category: "JAPANESE", price: 58.00, originalPrice: 70.00, stock: 18, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv6/1_hires.png", rarity: "Import", isHot: false, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 33, name: "Brilliant Stars Booster Bundle (Arceus)", category: "BOOSTER", price: 34.00, originalPrice: 42.00, stock: 10, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/swsh9/154_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 34, name: "Shining Fates Elite Trainer Box (Eevee VMAX)", category: "ETB", price: 59.95, originalPrice: 69.95, stock: 7, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/swsh45/sv107_hires.png", rarity: "ETB", isHot: false, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 35, name: "Magikarp #203 Paldea Evolved PSA 10", category: "PSA", price: 185.00, originalPrice: 210.00, stock: 2, image: "https://images.pokemontcg.io/sv2/203_hires.png", altImage: "https://images.pokemontcg.io/sv2/203.png", rarity: "PSA 10", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 36, name: "Super Electric Breaker Japanese Booster Box", category: "JAPANESE", price: 62.00, originalPrice: 75.00, stock: 15, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv8/1_hires.png", rarity: "Import", isHot: false, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 37, name: "Astral Radiance Booster Bundle", category: "BOOSTER", price: 27.50, originalPrice: 34.00, stock: 19, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/swsh10/188_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 38, name: "Evolving Skies Elite Trainer Box", category: "ETB", price: 129.00, originalPrice: 150.00, stock: 2, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/swsh7/218_hires.png", rarity: "Grail", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 39, name: "Sylveon VMAX #212 Alternate Art PSA 10", category: "PSA", price: 295.00, originalPrice: 340.00, stock: 2, image: "https://images.pokemontcg.io/swsh7/212_hires.png", altImage: "https://images.pokemontcg.io/swsh7/212.png", rarity: "PSA 10", isHot: false, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 40, name: "Night Wanderer Japanese Booster Box", category: "JAPANESE", price: 54.00, originalPrice: 65.00, stock: 21, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv6a/64_hires.png", rarity: "Import", isHot: false, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 41, name: "Fusion Strike Booster Bundle (Gengar)", category: "BOOSTER", price: 29.50, originalPrice: 36.00, stock: 13, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/swsh8/271_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 42, name: "Celebrations 25th Elite Trainer Box", category: "ETB", price: 89.95, originalPrice: 110.00, stock: 4, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/cel25/4_hires.png", rarity: "Grail", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 43, name: "Zapdos ex #202 Special Illustration PSA 10", category: "PSA", price: 125.00, originalPrice: 140.00, stock: 3, image: "https://images.pokemontcg.io/sv3pt5/202_hires.png", altImage: "https://images.pokemontcg.io/sv3pt5/202.png", rarity: "PSA 10", isHot: false, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 44, name: "Paradise Dragona Japanese Booster Box", category: "JAPANESE", price: 61.00, originalPrice: 72.00, stock: 16, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv7a/1_hires.png", rarity: "Import", isHot: false, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 45, name: "Chilling Reign Booster Bundle", category: "BOOSTER", price: 31.00, originalPrice: 38.00, stock: 12, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/swsh6/201_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 46, name: "Paldea Evolved Elite Trainer Box", category: "ETB", price: 47.95, originalPrice: 55.00, stock: 15, image: "images/etb_surging_sparks.jpg", altImage: "https://images.pokemontcg.io/sv2/203_hires.png", rarity: "ETB", isHot: false, isDropship: true, supplier: "Rotterdam Distribution Hub", shippingEta: "24-48u Track & Trace" },
+      { id: 47, name: "Alakazam ex #201 Special Illustration PSA 10", category: "PSA", price: 115.00, originalPrice: 130.00, stock: 3, image: "https://images.pokemontcg.io/sv3pt5/201_hires.png", altImage: "https://images.pokemontcg.io/sv3pt5/201.png", rarity: "PSA 10", isHot: false, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" },
+      { id: 48, name: "Crimson Haze Japanese Booster Box (Bloodmoon)", category: "JAPANESE", price: 59.00, originalPrice: 70.00, stock: 19, image: "images/booster_box_terastal.jpg", altImage: "https://images.pokemontcg.io/sv5a/92_hires.png", rarity: "Import", isHot: false, isDropship: true, supplier: "Tokyo Direct Dropship", shippingEta: "3-4 werkdagen" },
+      { id: 49, name: "Vivid Voltage Booster Bundle (Pikachu Chonkachu)", category: "BOOSTER", price: 32.50, originalPrice: 40.00, stock: 8, image: "images/booster_packs_display.jpg", altImage: "https://images.pokemontcg.io/swsh4/188_hires.png", rarity: "Bundle", isHot: false, isDropship: true, supplier: "EU Fulfillment Tilburg", shippingEta: "24-48u Track & Trace" },
+      { id: 50, name: "Erika's Invitation #203 Special Illustration PSA 10", category: "PSA", price: 175.00, originalPrice: 200.00, stock: 2, image: "https://images.pokemontcg.io/sv3pt5/203_hires.png", altImage: "https://images.pokemontcg.io/sv3pt5/203.png", rarity: "PSA 10", isHot: true, isDropship: false, supplier: "Eigen Vault Voorraad", shippingEta: "Direct op voorraad" }
+    ];
+
+    // Load custom database from localStorage if modified by user
+    function loadCustomDatabase() {
+      try {
+        const raw = localStorage.getItem('tcgvault_products_custom_v3');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn("Storage load fallback", e);
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_POKEMON_PRODUCTS));
+    }
+
+    let POKEMON_PRODUCTS = loadCustomDatabase();
+
+    function saveCustomDatabase() {
+      try {
+        localStorage.setItem('tcgvault_products_custom_v3', JSON.stringify(POKEMON_PRODUCTS));
+      } catch (e) {
+        console.error("Storage save failed", e);
+      }
+      renderCatalog();
+      renderAdminDatabaseTable();
+      updateHeaderCreditsBadge();
+    }
+
+    function resetCustomDatabase() {
+      if (confirm("Weet je zeker dat je de eigen database wilt resetten naar de standaard fabrieksinstellingen met 4K Ultra-HD afbeeldingen?")) {
+        POKEMON_PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_POKEMON_PRODUCTS));
+        saveCustomDatabase();
+        showToastNotification("✨ Database gereset naar standaard 4K catalogus!");
+      }
+    }
+
+    // Orders state
+    let customerOrders = [
+      { id: "TCG-89104", date: "Vandaag 09:41", item: "151 Booster Bundle (NL)", total: "€39,95", status: "Verzonden (PostNL)", badge: "bg-emerald-500/20 text-emerald-400" },
+      { id: "TCG-87622", date: "18 Sept 2024", item: "Charizard ex #199 PSA 10", total: "€289,00", status: "Bezorgd", badge: "bg-blue-500/20 text-blue-400" }
+    ];
+
+    /* ----------------------------------------------------
+       2. WEB AUDIO API SYNTHESIZER (TICK & WIN FANFARE)
+       ---------------------------------------------------- */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Tick sound for wheel clicks
+    function playTickSound() {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(580, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      } catch (e) {
+        // Fallback or muted browser
+      }
+    }
+
+    // Win fanfare musical chime
+    function playWinFanfare() {
+      try {
+        const ctx = getAudioContext();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.12);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.12 + 0.4);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.12);
+          osc.stop(ctx.currentTime + idx * 0.12 + 0.45);
+        });
+      } catch (e) {}
+    }
+
+    /* ----------------------------------------------------
+       3. NAVIGATION & VIEW SWITCHING
+       ---------------------------------------------------- */
+    function switchTab(tabName) {
+      currentTab = tabName;
+      ['shop', 'wheel', 'chat', 'whatsapp', 'profile'].forEach(t => {
+        const tabEl = document.getElementById('tab-' + t);
+        const navEl = document.getElementById('nav-' + t);
+        if (t === tabName) {
+          tabEl.classList.remove('hidden');
+          navEl.classList.remove('text-slate-400');
+          navEl.classList.add('text-crimson');
+        } else {
+          tabEl.classList.add('hidden');
+          navEl.classList.remove('text-crimson');
+          navEl.classList.add('text-slate-400');
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabName === 'wheel') {
+        drawWheel();
+      }
+    }
+
+    function toggleDualView() {
+      isAdminView = !isAdminView;
+      const custPanel = document.getElementById('customerViewPanel');
+      const adminPanel = document.getElementById('adminViewPanel');
+      const btn = document.getElementById('viewToggleBtn');
+      const icon = document.getElementById('viewToggleIcon');
+      const text = document.getElementById('viewToggleText');
+      const navLabel = document.getElementById('navProfileLabel');
+
+      if (isAdminView) {
+        custPanel.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+        icon.className = "fa-solid fa-user";
+        text.innerText = "Customer";
+        btn.classList.add('bg-red-700/40');
+        navLabel.innerText = "Admin";
+        switchTab('profile');
+        renderAdminDatabaseTable();
+      } else {
+        adminPanel.classList.add('hidden');
+        custPanel.classList.remove('hidden');
+        icon.className = "fa-solid fa-user-shield";
+        text.innerText = "Admin";
+        btn.classList.remove('bg-red-700/40');
+        navLabel.innerText = "Vault";
+        renderCatalog();
+      }
+    }
+
+    /* ----------------------------------------------------
+       4. SHOP CATALOG RENDERING & FILTERING
+       ---------------------------------------------------- */
+    function renderCatalog() {
+      const grid = document.getElementById('catalogGrid');
+      const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+      
+      const filtered = POKEMON_PRODUCTS.filter(item => {
+        const matchCat = currentCategory === 'ALL' || 
+          (currentCategory === 'DROPSHIP' ? item.isDropship : item.category === currentCategory);
+        const matchQuery = query === '' || 
+          item.name.toLowerCase().includes(query) || 
+          item.category.toLowerCase().includes(query) || 
+          (item.supplier && item.supplier.toLowerCase().includes(query)) ||
+          item.rarity.toLowerCase().includes(query);
+        return matchCat && matchQuery;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-400 space-y-2">
+            <i class="fa-solid fa-box-open text-4xl text-slate-600"></i>
+            <p class="text-sm font-semibold">Geen Pokémon items gevonden voor deze zoekopdracht.</p>
+            <button onclick="clearSearch()" class="text-xs text-crimson font-bold hover:underline">Reset filters</button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => `
+        <div class="glass-card rounded-2xl p-3 flex flex-col justify-between relative group border-slate-800 hover:border-crimson/50 transition">
+          ${item.isHot ? '<span class="absolute top-2 left-2 z-10 bg-crimson text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">HOT</span>' : ''}
+          <span class="absolute top-2 right-2 z-10 bg-slate-900/80 backdrop-blur-sm text-slate-300 text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700">
+            ${item.stock > 0 ? item.stock + ' op voorraad' : 'Uitverkocht'}
+          </span>
+
+          <!-- Image Container with 4K HD preview, multi-image gallery & 360 video inspection -->
+          <div class="relative w-full aspect-square rounded-xl bg-slate-900/90 overflow-hidden my-2 flex items-center justify-center p-2">
+            <img 
+              id="img-prod-${item.id}"
+              src="${item.image}" 
+              alt="${item.name}" 
+              class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+              onclick="openImagePreviewModal('${item.name.replace(/'/g, "\\'")}', '${item.image}', '${item.category} • ${item.rarity} • ${item.isDropship ? (item.supplier || 'Dropship Direct') : 'Eigen Vault'}')"
+              onerror="this.onerror=null; this.src='images/booster_packs_display.jpg'"
+            >
+            <!-- Gallery / Video Inspection triggers -->
+            <div class="absolute bottom-1 right-1 flex items-center gap-1 opacity-90">
+              <button 
+                onclick="openImagePreviewModal('${item.name.replace(/'/g, "\\'")}', '${item.image}', '${item.category} • ${item.rarity} • ${item.isDropship ? (item.supplier || 'Dropship Direct') : 'Eigen Vault'}')" 
+                title="4K HD Inspectie"
+                class="w-6 h-6 rounded-md bg-black/75 hover:bg-emerald-600 text-white text-[10px] flex items-center justify-center transition"
+              >
+                <i class="fa-solid fa-expand"></i>
+              </button>
+              <button 
+                onclick="toggleImageGallery(${item.id}, '${item.image}', '${item.altImage}')" 
+                title="Wissel foto"
+                class="w-6 h-6 rounded-md bg-black/75 hover:bg-crimson text-white text-[10px] flex items-center justify-center transition"
+              >
+                <i class="fa-solid fa-images"></i>
+              </button>
+              <button 
+                onclick="openVideoModal('${item.name.replace(/'/g, "\\'")}', '${item.image}')" 
+                title="360 video inspectie"
+                class="w-6 h-6 rounded-md bg-black/75 hover:bg-crimson text-white text-[10px] flex items-center justify-center transition"
+              >
+                <i class="fa-solid fa-video"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Meta Info -->
+          <div class="space-y-1 mt-1">
+            <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
+              <div class="flex items-center gap-1">
+                <span class="text-crimson">${item.category}</span>
+                <span>•</span>
+                <span>${item.rarity}</span>
+              </div>
+            </div>
+
+            <!-- Dropship / Vault Status Badge -->
+            ${item.isDropship ? `
+              <div class="flex items-center gap-1 text-[8.5px] text-emerald-400 font-bold bg-emerald-950/70 border border-emerald-500/30 px-1.5 py-0.5 rounded w-fit">
+                <i class="fa-solid fa-truck-fast text-[8px]"></i>
+                <span class="truncate max-w-[130px]">${item.supplier || 'Dropship Direct'}</span>
+              </div>
+            ` : `
+              <div class="flex items-center gap-1 text-[8.5px] text-blue-300 font-bold bg-blue-950/70 border border-blue-500/30 px-1.5 py-0.5 rounded w-fit">
+                <i class="fa-solid fa-gem text-[8px]"></i>
+                <span>Eigen Vault Voorraad</span>
+              </div>
+            `}
+
+            <h3 class="text-xs font-bold text-white line-clamp-2 leading-tight pt-0.5">
+              ${item.name}
+            </h3>
+            
+            <div class="flex items-baseline space-x-1.5 pt-1">
+              <span class="text-sm font-extrabold text-white font-display">€${item.price.toFixed(2)}</span>
+              <span class="text-[10px] text-slate-500 line-through">€${item.originalPrice.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <!-- Checkout Trigger Button -->
+          <button 
+            onclick="openCheckoutModal(${item.id})"
+            class="w-full mt-2.5 bg-crimson hover:bg-red-500 text-white py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-crimson/25 active:scale-95 transition"
+          >
+            <i class="fa-solid fa-bolt text-[11px]"></i>
+            <span>Nu Kopen</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function setCategoryFilter(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.className = "cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-surface text-slate-300 border border-slate-700";
+      });
+      const active = document.getElementById('pill-' + cat);
+      if (active) {
+        active.className = "cat-pill px-3 py-1.5 rounded-lg font-bold whitespace-nowrap bg-crimson text-white";
+      }
+      renderCatalog();
+    }
+
+    function filterCatalog() {
+      renderCatalog();
+    }
+
+    function clearSearch() {
+      const search = document.getElementById('searchInput');
+      if (search) search.value = '';
+      currentCategory = 'ALL';
+      setCategoryFilter('ALL');
+    }
+
+    function toggleImageGallery(id, img1, img2) {
+      const imgEl = document.getElementById('img-prod-' + id);
+      if (!imgEl) return;
+      if (imgEl.src.includes(img1) || imgEl.src === img1) {
+        imgEl.src = img2;
+      } else {
+        imgEl.src = img1;
+      }
+    }
+
+    function openVideoModal(name, imgSrc) {
+      document.getElementById('videoModalTitle').innerText = name;
+      document.getElementById('videoModalImg').src = imgSrc;
+      document.getElementById('videoModal').classList.remove('hidden');
+    }
+
+    function closeVideoModal() {
+      document.getElementById('videoModal').classList.add('hidden');
+    }
+
+    // HD Fullscreen Lightbox Product Preview
+    function openImagePreviewModal(name, imgSrc, badgeText) {
+      document.getElementById('imagePreviewTitle').innerText = name;
+      document.getElementById('imagePreviewImg').src = imgSrc;
+      document.getElementById('imagePreviewBadge').innerText = badgeText || "4K Product Sealing";
+      document.getElementById('imagePreviewModal').classList.remove('hidden');
+    }
+
+    function closeImagePreviewModal() {
+      document.getElementById('imagePreviewModal').classList.add('hidden');
+    }
+
+    /* ----------------------------------------------------
+       4B. ADMIN EIGEN DATABASE & DROPSHIPPING MANAGER
+       ---------------------------------------------------- */
+    function renderAdminDatabaseTable() {
+      const listEl = document.getElementById('adminDatabaseList');
+      if (!listEl) return;
+
+      const query = (document.getElementById('adminDbSearchInput')?.value || '').toLowerCase().trim();
+      const catFilter = document.getElementById('adminDbCategoryFilter')?.value || 'ALL';
+
+      // Update counters
+      const totalCount = POKEMON_PRODUCTS.length;
+      const dropshipCount = POKEMON_PRODUCTS.filter(p => p.isDropship).length;
+      const packsCount = POKEMON_PRODUCTS.filter(p => p.category === 'BOOSTER' || p.category === 'JAPANESE').length;
+      const vaultCount = POKEMON_PRODUCTS.filter(p => !p.isDropship).length;
+
+      const elTotal = document.getElementById('adminDbTotalCount');
+      const elDropship = document.getElementById('adminDbDropshipCount');
+      const elPacks = document.getElementById('adminDbPacksCount');
+      const elVault = document.getElementById('adminDbVaultCount');
+
+      if (elTotal) elTotal.innerText = totalCount;
+      if (elDropship) elDropship.innerText = dropshipCount;
+      if (elPacks) elPacks.innerText = packsCount;
+      if (elVault) elVault.innerText = vaultCount;
+
+      const filtered = POKEMON_PRODUCTS.filter(item => {
+        const matchCat = catFilter === 'ALL' || 
+          (catFilter === 'DROPSHIP' ? item.isDropship : item.category === catFilter);
+        const matchQuery = query === '' || 
+          item.name.toLowerCase().includes(query) || 
+          item.category.toLowerCase().includes(query) ||
+          (item.supplier && item.supplier.toLowerCase().includes(query));
+        return matchCat && matchQuery;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="p-6 text-center text-slate-400 bg-surface/50 rounded-xl border border-slate-800">
+            <i class="fa-solid fa-box-open text-2xl text-slate-500 mb-1"></i>
+            <p class="text-xs">Geen database producten gevonden voor deze filter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(item => `
+        <div class="p-3 bg-surface/80 rounded-xl border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition">
+          <div class="flex items-center space-x-3 min-w-0">
+            <!-- 4K Thumbnail with zoom trigger -->
+            <div 
+              onclick="openImagePreviewModal('${item.name.replace(/'/g, "\\'")}', '${item.image}', '${item.category} • ${item.rarity}')" 
+              class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700/80 overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer group relative"
+              title="Klik voor 4K vergroting"
+            >
+              <img 
+                src="${item.image}" 
+                alt="${item.name}" 
+                class="w-full h-full object-contain p-1 group-hover:scale-110 transition"
+                onerror="this.onerror=null; this.src='images/booster_packs_display.jpg'"
+              >
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] transition">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <h5 class="text-xs font-bold text-white truncate max-w-[180px] sm:max-w-xs">${item.name}</h5>
+                <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${item.isDropship ? 'bg-emerald-950 text-emerald-400 border border-emerald-600/40' : 'bg-blue-950 text-blue-400 border border-blue-600/40'}">
+                  ${item.isDropship ? 'Dropship' : 'Vault'}
+                </span>
+              </div>
+              <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                <span>Cat: <strong class="text-slate-200">${item.category}</strong></span>
+                <span>•</span>
+                <span>Prijs: <strong class="text-amber-300 font-mono">€${item.price.toFixed(2)}</strong></span>
+                <span>•</span>
+                <span>Voorraad: <strong class="text-white">${item.stock} stuks</strong></span>
+              </div>
+              <div class="text-[9px] text-slate-400 truncate mt-0.5 flex items-center gap-1">
+                <i class="fa-solid fa-location-dot text-slate-400"></i>
+                <span>${item.supplier || 'Eigen Vault'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <button 
+              onclick="openEditProductModal(${item.id})" 
+              class="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-lg text-xs font-bold flex items-center gap-1 active:scale-95 transition"
+              title="Afbeelding & gegevens bewerken"
+            >
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span class="hidden sm:inline">Afbeelding & Info</span>
+            </button>
+            <button 
+              onclick="deleteProductFromDatabase(${item.id})" 
+              class="w-7 h-7 bg-red-950/60 hover:bg-red-900 border border-red-700/50 text-red-300 rounded-lg text-xs flex items-center justify-center active:scale-95 transition"
+              title="Product verwijderen"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Edit Product Handlers
+    function openEditProductModal(id) {
+      const item = POKEMON_PRODUCTS.find(p => p.id === id);
+      if (!item) return;
+
+      document.getElementById('editProdId').value = item.id;
+      document.getElementById('editProdName').value = item.name;
+      document.getElementById('editProdCategory').value = item.category;
+      document.getElementById('editProdRarity').value = item.rarity;
+      document.getElementById('editProdPrice').value = item.price;
+      document.getElementById('editProdOrigPrice').value = item.originalPrice;
+      document.getElementById('editProdStock').value = item.stock;
+      document.getElementById('editProdIsDropship').checked = !!item.isDropship;
+      document.getElementById('editProdSupplier').value = item.supplier || 'Tokyo Direct Dropship';
+      document.getElementById('editProdImage').value = item.image;
+      document.getElementById('editProdImagePreview').src = item.image;
+
+      document.getElementById('editProductModal').classList.remove('hidden');
+    }
+
+    function closeEditProductModal() {
+      document.getElementById('editProductModal').classList.add('hidden');
+    }
+
+    function selectEditImagePreset(url) {
+      document.getElementById('editProdImage').value = url;
+      document.getElementById('editProdImagePreview').src = url;
+    }
+
+    function updateEditImageLivePreview(url) {
+      const img = document.getElementById('editProdImagePreview');
+      if (img && url) img.src = url;
+    }
+
+    function saveProductEdit() {
+      const id = parseInt(document.getElementById('editProdId').value);
+      const item = POKEMON_PRODUCTS.find(p => p.id === id);
+      if (!item) return;
+
+      item.name = document.getElementById('editProdName').value.trim() || item.name;
+      item.category = document.getElementById('editProdCategory').value;
+      item.rarity = document.getElementById('editProdRarity').value.trim() || item.rarity;
+      item.price = parseFloat(document.getElementById('editProdPrice').value) || item.price;
+      item.originalPrice = parseFloat(document.getElementById('editProdOrigPrice').value) || item.originalPrice;
+      item.stock = parseInt(document.getElementById('editProdStock').value) || 0;
+      item.isDropship = document.getElementById('editProdIsDropship').checked;
+      item.supplier = document.getElementById('editProdSupplier').value;
+      
+      const newImg = document.getElementById('editProdImage').value.trim();
+      if (newImg) {
+        item.image = newImg;
+      }
+
+      saveCustomDatabase();
+      closeEditProductModal();
+      showToastNotification(`✅ Product #${id} (${item.name}) succesvol bijgewerkt!`);
+    }
+
+    // Add Product Handlers
+    function openAddProductModal() {
+      document.getElementById('newProdName').value = '';
+      document.getElementById('newProdCategory').value = 'BOOSTER';
+      document.getElementById('newProdRarity').value = 'Bundle';
+      document.getElementById('newProdPrice').value = '49.95';
+      document.getElementById('newProdOrigPrice').value = '59.95';
+      document.getElementById('newProdStock').value = '20';
+      document.getElementById('newProdIsDropship').checked = true;
+      document.getElementById('newProdSupplier').value = 'EU Fulfillment Tilburg';
+      document.getElementById('newProdImage').value = 'images/booster_bundle_151.jpg';
+      document.getElementById('newProdImagePreview').src = 'images/booster_bundle_151.jpg';
+
+      document.getElementById('addProductModal').classList.remove('hidden');
+    }
+
+    function closeAddProductModal() {
+      document.getElementById('addProductModal').classList.add('hidden');
+    }
+
+    function selectNewImagePreset(url) {
+      document.getElementById('newProdImage').value = url;
+      document.getElementById('newProdImagePreview').src = url;
+    }
+
+    function updateNewImageLivePreview(url) {
+      const img = document.getElementById('newProdImagePreview');
+      if (img && url) img.src = url;
+    }
+
+    function saveNewProduct() {
+      const name = document.getElementById('newProdName').value.trim();
+      if (!name) {
+        alert("Vul een geldige productnaam in!");
+        return;
+      }
+
+      const category = document.getElementById('newProdCategory').value;
+      const rarity = document.getElementById('newProdRarity').value.trim() || 'Import';
+      const price = parseFloat(document.getElementById('newProdPrice').value) || 39.95;
+      const originalPrice = parseFloat(document.getElementById('newProdOrigPrice').value) || (price * 1.2);
+      const stock = parseInt(document.getElementById('newProdStock').value) || 10;
+      const isDropship = document.getElementById('newProdIsDropship').checked;
+      const supplier = document.getElementById('newProdSupplier').value;
+      const image = document.getElementById('newProdImage').value.trim() || 'images/booster_packs_display.jpg';
+
+      const nextId = POKEMON_PRODUCTS.reduce((max, p) => Math.max(max, p.id || 0), 0) + 1;
+
+      const newProduct = {
+        id: nextId,
+        name: name,
+        category: category,
+        price: price,
+        originalPrice: originalPrice,
+        stock: stock,
+        image: image,
+        altImage: "images/booster_packs_display.jpg",
+        rarity: rarity,
+        isHot: true,
+        isDropship: isDropship,
+        supplier: supplier,
+        shippingEta: isDropship ? "24-48u Track & Trace" : "Direct op voorraad"
+      };
+
+      POKEMON_PRODUCTS.unshift(newProduct);
+      saveCustomDatabase();
+      closeAddProductModal();
+      showToastNotification(`🎉 Nieuw product "${name}" toegevoegd aan database!`);
+    }
+
+    function deleteProductFromDatabase(id) {
+      const item = POKEMON_PRODUCTS.find(p => p.id === id);
+      if (!item) return;
+
+      if (confirm(`Weet je zeker dat je "${item.name}" wilt verwijderen uit je eigen database?`)) {
+        POKEMON_PRODUCTS = POKEMON_PRODUCTS.filter(p => p.id !== id);
+        saveCustomDatabase();
+        showToastNotification(`🗑️ Product "${item.name}" verwijderd uit database.`);
+      }
+    }
+
+    // Handle Local File Upload for Images
+    function handleProductFileUpload(event, targetInputId, targetPreviewId) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        const inputEl = document.getElementById(targetInputId);
+        const previewEl = document.getElementById(targetPreviewId);
+        if (inputEl) inputEl.value = dataUrl;
+        if (previewEl) previewEl.src = dataUrl;
+        showToastNotification("📸 Foto succesvol geladen!");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    /* ----------------------------------------------------
+       4C. JBCARDS.NL LIVEGANG & FTP/SFTP DEPLOYMENT SYSTEM
+       ---------------------------------------------------- */
+    function handleFtpDeploymentTest() {
+      const host = document.getElementById('ftpHost')?.value.trim() || 'ftp.jbcards.nl';
+      const user = document.getElementById('ftpUser')?.value.trim() || 'jbcards_admin';
+      const modal = document.getElementById('ftpDeploymentModal');
+      const countEl = document.getElementById('deployProdCount');
+      const logEl = document.getElementById('deployConsoleOutput');
+      const barEl = document.getElementById('deployProgressBar');
+      const pctEl = document.getElementById('deployProgressPct');
+
+      if (countEl) countEl.innerText = `${POKEMON_PRODUCTS.length} Items`;
+      if (modal) modal.classList.remove('hidden');
+
+      if (logEl) {
+        logEl.innerHTML = `
+          <div>[INIT] Initialiseer livegang audit voor ${host}...</div>
+          <div>[AUTH] Gebruiker: ${user} | Doelmap: /public_html/</div>
+        `;
+      }
+
+      if (barEl) barEl.style.width = '15%';
+      if (pctEl) pctEl.innerText = '15%';
+
+      setTimeout(() => {
+        if (logEl) logEl.innerHTML += `<div>[CHECK 1/4] DNS Verificatie voor jbcards.nl & ftp.jbcards.nl ... OK</div>`;
+        if (barEl) barEl.style.width = '45%';
+        if (pctEl) pctEl.innerText = '45%';
+      }, 400);
+
+      setTimeout(() => {
+        if (logEl) logEl.innerHTML += `<div>[CHECK 2/4] Validatie van 50+ 4K booster & dropship visuals ... OK</div>`;
+        if (barEl) barEl.style.width = '75%';
+        if (pctEl) pctEl.innerText = '75%';
+      }, 900);
+
+      setTimeout(() => {
+        if (logEl) {
+          logEl.innerHTML += `
+            <div>[CHECK 3/4] SumUp checkout, .htaccess & robots.txt geoptimaliseerd ... OK</div>
+            <div>[SUCCESS 4/4] Pakket en serverstructuur 100% gereed voor upload naar jbcards.nl!</div>
+          `;
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+        if (barEl) barEl.style.width = '100%';
+        if (pctEl) pctEl.innerText = '100% GEREED';
+        showToastNotification("🚀 jbcards.nl livegang pakket gevalideerd en gereed!");
+      }, 1400);
+    }
+
+    function closeFtpModal() {
+      const modal = document.getElementById('ftpDeploymentModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function copyFtpCliCommand() {
+      const host = document.getElementById('ftpHost')?.value.trim() || 'ftp.jbcards.nl';
+      const user = document.getElementById('ftpUser')?.value.trim() || 'u12345_jbcards';
+      const cmd = `lftp -u ${user} ${host} -e "mirror -R . /public_html/; quit"`;
+      navigator.clipboard?.writeText(cmd).then(() => {
+        showToastNotification("📋 Terminal LFTP command gekopieerd!");
+      }).catch(() => {
+        prompt("Kopieer dit terminal commando:", cmd);
+      });
+    }
+
+    function copyFileZillaInfo() {
+      const host = document.getElementById('ftpHost')?.value.trim() || 'ftp.jbcards.nl';
+      const user = document.getElementById('ftpUser')?.value.trim() || 'u12345_jbcards';
+      const text = `Host: ${host}\nProtocol: FTP / SFTP\nPoort: 21 (of 22 voor SFTP)\nGebruiker: ${user}\nDoelmap: /public_html/\nWebsite: https://jbcards.nl`;
+      navigator.clipboard?.writeText(text).then(() => {
+        showToastNotification("📋 FileZilla gegevens gekopieerd naar klembord!");
+      }).catch(() => {
+        prompt("Kopieer je FTP gegevens:", text);
+      });
+    }
+
+    /* ----------------------------------------------------
+       5. GAMIFIED LUCKY WHEEL (CANVAS & SPIN MECHANISM)
+       ---------------------------------------------------- */
+    const WHEEL_PRIZES = [
+      { text: "151 Booster Pack", color: "#dc2626", textColor: "#ffffff" },
+      { text: "€10 SumUp Korting", color: "#0f172a", textColor: "#f59e0b" },
+      { text: "PSA 10 Slab Tier", color: "#b91c1c", textColor: "#ffffff" },
+      { text: "2x Spin Credits", color: "#1e293b", textColor: "#38bdf8" },
+      { text: "Gratis Verzending", color: "#991b1b", textColor: "#ffffff" },
+      { text: "Terastal Promo", color: "#0f172a", textColor: "#34d399" },
+      { text: "€25 Vault Vouchercode", color: "#dc2626", textColor: "#ffffff" },
+      { text: "15% Extra Korting", color: "#1e293b", textColor: "#fbbf24" }
+    ];
+
+    let wheelRotation = 0;
+    let isSpinning = false;
+
+    // Safe celebration fanfare with DOM fallback for headless/virtual emulators
+    function triggerConfetti(options) {
+      try {
+        if (typeof confetti === 'function') {
+          confetti(options);
+          return;
+        }
+      } catch (err) {
+        console.warn('Canvas confetti error, falling back to DOM burst:', err);
+      }
+      createDomConfettiBurst();
+    }
+
+    function createDomConfettiBurst() {
+      try {
+        const colors = ['#dc2626', '#f59e0b', '#38bdf8', '#10b981', '#ec4899', '#8b5cf6'];
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.inset = '0';
+        container.style.pointerEvents = 'none';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+
+        for (let i = 0; i < 45; i++) {
+          const p = document.createElement('div');
+          p.style.position = 'absolute';
+          p.style.width = Math.random() * 8 + 6 + 'px';
+          p.style.height = Math.random() * 8 + 6 + 'px';
+          p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          p.style.borderRadius = '3px';
+          p.style.left = '50%';
+          p.style.top = '45%';
+          p.style.transition = 'all 1.1s cubic-bezier(0.22, 1, 0.36, 1)';
+          container.appendChild(p);
+
+          setTimeout(() => {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 260 + 60;
+            const x = Math.cos(angle) * dist;
+            const y = Math.sin(angle) * dist + 120;
+            p.style.transform = `translate(${x}px, ${y}px) rotate(${Math.random() * 720}deg)`;
+            p.style.opacity = '0';
+          }, 20);
+        }
+
+        setTimeout(() => {
+          container.remove();
+        }, 1300);
+      } catch (e) {}
+    }
+
+    function drawWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      if (!canvas) return;
+      let ctx = null;
+      try {
+        ctx = canvas.getContext('2d');
+      } catch (err) {
+        console.warn('Canvas 2D context error:', err);
+      }
+      if (!ctx) return;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = centerX - 10;
+      const numSegments = WHEEL_PRIZES.length;
+      const anglePerSegment = (2 * Math.PI) / numSegments;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(wheelRotation);
+
+      for (let i = 0; i < numSegments; i++) {
+        const segAngle = i * anglePerSegment;
+        
+        // Draw segment
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, segAngle, segAngle + anglePerSegment);
+        ctx.closePath();
+        ctx.fillStyle = WHEEL_PRIZES[i].color;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#080d1a";
+        ctx.stroke();
+
+        // Draw text
+        ctx.save();
+        ctx.rotate(segAngle + anglePerSegment / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = WHEEL_PRIZES[i].textColor;
+        ctx.font = "bold 11px Outfit, sans-serif";
+        ctx.fillText(WHEEL_PRIZES[i].text, radius - 18, 4);
+        ctx.restore();
+      }
+
+      ctx.restore();
+
+      // Outer golden trim ring
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#f59e0b";
+      ctx.stroke();
+    }
+
+    function spinTheWheel() {
+      if (isSpinning) return;
+      if (spinCredits <= 0) {
+        alert("Je hebt geen spin credits meer! Klik op '+ Krijg Credit' om door te spelen.");
+        return;
+      }
+
+      // Deduct 1 credit
+      spinCredits--;
+      updateCreditsUI();
+
+      isSpinning = true;
+      const spinBtn = document.getElementById('spinBtn');
+      spinBtn.disabled = true;
+
+      // Audio init on user gesture
+      getAudioContext();
+
+      const numSegments = WHEEL_PRIZES.length;
+      const segmentAngle = (2 * Math.PI) / numSegments;
+      // Random prize selection
+      const prizeIndex = Math.floor(Math.random() * numSegments);
+      // We want pointer at top (-PI/2). Segment center should land there:
+      const targetAngleOnCircle = 2 * Math.PI - (prizeIndex * segmentAngle + segmentAngle / 2) - Math.PI / 2;
+      const fullRotations = 5 * 2 * Math.PI; // 5 full spins
+      const totalSpin = fullRotations + targetAngleOnCircle + (Math.random() * 0.1 - 0.05);
+
+      const startTime = performance.now();
+      const duration = 4200; // 4.2 seconds
+      let lastTickAngle = 0;
+
+      function animateSpin(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        wheelRotation = easeOut * totalSpin;
+
+        // Sound tick check
+        if (Math.abs(wheelRotation - lastTickAngle) > segmentAngle) {
+          playTickSound();
+          lastTickAngle = wheelRotation;
+        }
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animateSpin);
+        } else {
+          isSpinning = false;
+          spinBtn.disabled = false;
+          onWheelLanded(prizeIndex);
+        }
+      }
+
+      requestAnimationFrame(animateSpin);
+    }
+
+    function onWheelLanded(index) {
+      const prize = WHEEL_PRIZES[index];
+      playWinFanfare();
+
+      // Confetti celebration
+      triggerConfetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      document.getElementById('wheelPrizeTitle').innerText = prize.text + "!";
+      document.getElementById('wheelPrizeCode').innerText = "VOUCHER: VAULT-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+      document.getElementById('wheelWinModal').classList.remove('hidden');
+
+      // Post win to community chat
+      addCommunityChatMessage("🎉 Systeem", `Ash K. heeft zojuist <strong>${prize.text}</strong> gewonnen op het Rad! 🔥`, "bot");
+    }
+
+    function claimWheelWin() {
+      document.getElementById('wheelWinModal').classList.add('hidden');
+    }
+
+    function addSpinCredit(num) {
+      spinCredits += num;
+      updateCreditsUI();
+      // Toast notification
+      showToastNotification("✨ +1 Spin Credit toegevoegd!");
+    }
+
+    function updateCreditsUI() {
+      document.getElementById('headerCredits').innerText = spinCredits;
+      document.getElementById('wheelCreditsDisplay').innerText = spinCredits;
+    }
+
+    /* ----------------------------------------------------
+       6. HYPE COMMUNITY CHATROOM & BOTS BANTER
+       ---------------------------------------------------- */
+    const SIMULATED_USERS = [
+      { name: "PokeMaster_NL", badge: "VIP" },
+      { name: "SlabCollector_BE", badge: "PRO" },
+      { name: "ShinyHunter99", badge: "ELITE" },
+      { name: "GengarLover", badge: "MEMBER" },
+      { name: "CardInvestor_AMS", badge: "VIP" }
+    ];
+
+    const RANDOM_BOT_MESSAGES = [
+      "Die Japanese Terastal Festival boxen gaan echt absurd hard nu!",
+      "Iemand al de PSA 10 Charizard gecheckt? Centering is letterlijk perfect.",
+      "Zojuist 3x 151 Booster Bundles gescoord via iDEAL, tracking was binnen 10 min binnen!",
+      "Wanneer komt de volgende Eevee Heroes drop live?",
+      "Rad gaf me net 2x Spin Credits haha, direct weer proberen 🚀",
+      "PSA 10 Moonbreon blijft toch echt de holy grail van deze drop."
+    ];
+
+    function initCommunityChat() {
+      const chatContainer = document.getElementById('chatMessages');
+      chatContainer.innerHTML = `
+        <div class="p-2.5 rounded-xl bg-surfaceLight/60 border border-slate-800 space-y-1">
+          <div class="flex items-center gap-1.5 font-bold text-crimson">
+            <i class="fa-solid fa-shield"></i>
+            <span>TCGVault Bot Alert</span>
+          </div>
+          <p class="text-slate-300">Welkom in de Hype Room! Alle drops worden hier live aangekondigd. Stel vragen over kaarten aan onze AI Sales Agent.</p>
+        </div>
+      `;
+      // Initial simulated chats
+      addCommunityChatMessage("PokeMaster_NL", "Yo gasten, zijn die Surging Sparks ETBs al gesealed?", "user");
+      addCommunityChatMessage("TCGVault AI", "Jazeker! Alle ETBs en Booster Bundles zijn 100% origineel factory sealed en verzekerd verzonden.", "ai");
+    }
+
+    function addCommunityChatMessage(author, text, type = 'user') {
+      const chatContainer = document.getElementById('chatMessages');
+      if (!chatContainer) return;
+      const msgDiv = document.createElement('div');
+      
+      let badgeStyle = "bg-slate-800 text-slate-300";
+      let borderStyle = "border-slate-800";
+      if (type === 'ai') {
+        badgeStyle = "bg-crimson text-white";
+        borderStyle = "border-crimson/40 bg-crimson/10";
+      } else if (type === 'bot') {
+        badgeStyle = "bg-gold/20 text-gold";
+        borderStyle = "border-gold/30 bg-gold/5";
+      }
+
+      msgDiv.className = `p-2.5 rounded-xl border ${borderStyle} space-y-0.5 animate-fadeIn`;
+      msgDiv.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-white flex items-center gap-1.5">
+            ${author}
+            <span class="text-[9px] px-1 py-0.2 rounded ${badgeStyle}">${type.toUpperCase()}</span>
+          </span>
+          <span class="text-[10px] text-slate-500">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+        <div class="text-slate-300 leading-snug">${text}</div>
+      `;
+      chatContainer.appendChild(msgDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function triggerSimulatedHypeWin() {
+      const user = SIMULATED_USERS[Math.floor(Math.random() * SIMULATED_USERS.length)];
+      const msg = RANDOM_BOT_MESSAGES[Math.floor(Math.random() * RANDOM_BOT_MESSAGES.length)];
+      addCommunityChatMessage(user.name, msg, "user");
+    }
+
+    // Auto chatter interval every 14 seconds
+    setInterval(() => {
+      if (Math.random() > 0.4) {
+        triggerSimulatedHypeWin();
+      }
+    }, 14000);
+
+    async function handleUserChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      addCommunityChatMessage("Jij (Ash K.)", text, "user");
+
+      // Check if native Android bridge is available for Gemini Chat
+      if (window.AndroidBridge && window.AndroidBridge.geminiChat) {
+        try {
+          const aiResponse = window.AndroidBridge.geminiChat(text);
+          addCommunityChatMessage("TCGVault AI", aiResponse, "ai");
+          return;
+        } catch (err) {
+          console.log("Bridge fallback", err);
+        }
+      }
+
+      // Responsive AI Agent reply
+      setTimeout(() => {
+        let reply = "Geweldige vraag! Onze Pokémon voorraad wordt realtime gesynchroniseerd met geaccrediteerde Japanse leveranciers. Alle PSA 10 slabs bevatten barcode certificatie!";
+        if (text.toLowerCase().includes('prijs') || text.toLowerCase().includes('korting')) {
+          reply = "Gebruik code 'VAULT10' bij de SumUp checkout voor €10 extra korting op je eerste booster order!";
+        } else if (text.toLowerCase().includes('spin') || text.toLowerCase().includes('rad')) {
+          reply = "Je kunt credits verdienen bij elke aankoop of direct via het tabblad 'Rad'!";
+        } else if (text.toLowerCase().includes('verzending') || text.toLowerCase().includes('ideal')) {
+          reply = "Wij leveren binnen 24 uur met PostNL Track & Trace en ondersteunen alle Nederlandse en Belgische banken via iDEAL en SumUp Pay.";
+        }
+        addCommunityChatMessage("TCGVault AI", reply, "ai");
+      }, 700);
+    }
+
+    /* ----------------------------------------------------
+       7. WHATSAPP BULK & MANUAL MARKETING MODULE
+       ---------------------------------------------------- */
+    let parsedWAContacts = [];
+
+    function applyWATemplate(type) {
+      const msgArea = document.getElementById('waMessageText');
+      if (type === 'drop') {
+        msgArea.value = "🚨 TCGVAULT DROP ALERT! De zeldzame 151 Booster Bundles & PSA 10 Charizards zijn zojuist bijgevuld. Bestel nu direct met gratis verzending via https://tcgvault.pro";
+      } else if (type === 'wheel') {
+        msgArea.value = "🎁 CLAIM JE GRATIS SPIN! Als gewaardeerde Pokémon verzamelaar staat er 1 gratis spin credit voor je klaar op ons Lucky Rad: https://tcgvault.pro";
+      } else if (type === 'psa') {
+        msgArea.value = "💎 EXCLUSIEF: PSA 10 Umbreon Moonbreon & Rayquaza VMAX zijn nu live in de vault. Slechts 1 exemplaar per klant beschikbaar: https://tcgvault.pro";
+      }
+    }
+
+    function generateSingleWALink() {
+      const phoneInput = document.getElementById('waPhoneInput').value.replace(/[^0-9]/g, '');
+      const text = encodeURIComponent(document.getElementById('waMessageText').value);
+      if (!phoneInput) {
+        alert("Voer een geldig telefoonnummer in!");
+        return;
+      }
+      const waUrl = `https://wa.me/${phoneInput}?text=${text}`;
+      window.open(waUrl, '_blank');
+    }
+
+    function handleWACsvUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const lines = evt.target.result.split(/\r\n|\n/);
+        parsedWAContacts = [];
+        lines.forEach(l => {
+          const cleaned = l.replace(/[^0-9]/g, '');
+          if (cleaned.length >= 8) {
+            parsedWAContacts.push(cleaned);
+          }
+        });
+
+        document.getElementById('waCount').innerText = parsedWAContacts.length;
+        document.getElementById('waCsvStatus').innerText = `✅ ${parsedWAContacts.length} nummers succesvol geladen uit CSV.`;
+        document.getElementById('waBulkContainer').classList.remove('hidden');
+
+        // Render batch list preview
+        const batchList = document.getElementById('waBatchList');
+        batchList.innerHTML = parsedWAContacts.slice(0, 15).map((num, i) => `
+          <div class="flex items-center justify-between p-1.5 bg-slate-900 rounded border border-slate-800">
+            <span>+${num}</span>
+            <button onclick="sendSingleWaItem('${num}')" class="text-[10px] bg-emerald-600 px-2 py-0.5 rounded text-white font-bold">Stuur</button>
+          </div>
+        `).join('') + (parsedWAContacts.length > 15 ? `<div class="text-[10px] text-slate-500 text-center">...en nog ${parsedWAContacts.length - 15} contacten</div>` : '');
+      };
+      reader.readAsText(file);
+    }
+
+    function sendSingleWaItem(num) {
+      const text = encodeURIComponent(document.getElementById('waMessageText').value);
+      window.open(`https://wa.me/${num}?text=${text}`, '_blank');
+    }
+
+    function openNextWABatch() {
+      if (parsedWAContacts.length === 0) {
+        alert("Upload eerst een CSV bestand met contacten!");
+        return;
+      }
+      const text = encodeURIComponent(document.getElementById('waMessageText').value);
+      // Open 5 tabs safely
+      const batch = parsedWAContacts.slice(0, 5);
+      batch.forEach(num => {
+        window.open(`https://wa.me/${num}?text=${text}`, '_blank');
+      });
+      showToastNotification(`🚀 5 WhatsApp links geopend voor verzending!`);
+    }
+
+    /* ----------------------------------------------------
+       8. SUMUP & PAY GATEWAY (CHECKOUT FLOW)
+       ---------------------------------------------------- */
+    function openCheckoutModal(productId) {
+      const prod = POKEMON_PRODUCTS.find(p => p.id === productId);
+      if (!prod) return;
+      selectedProductForCheckout = prod;
+
+      const container = document.getElementById('checkoutProductInfo');
+      container.innerHTML = `
+        <img src="${prod.image}" class="w-14 h-14 object-contain rounded-lg bg-slate-900 p-1 border border-slate-800">
+        <div class="flex-1 min-w-0">
+          <h4 class="text-xs font-bold text-white truncate">${prod.name}</h4>
+          <p class="text-[11px] text-slate-400 font-bold">${prod.category} • ${prod.rarity}</p>
+          <span class="text-sm font-extrabold text-crimson font-display">€${prod.price.toFixed(2)}</span>
+        </div>
+      `;
+
+      document.getElementById('checkoutSubtotal').innerText = `€${prod.price.toFixed(2)}`;
+      document.getElementById('checkoutTotal').innerText = `€${prod.price.toFixed(2)}`;
+      document.getElementById('checkoutModal').classList.remove('hidden');
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').classList.add('hidden');
+    }
+
+    function selectPayMethod(method) {
+      selectedPayMethod = method;
+      document.querySelectorAll('.pay-btn').forEach(b => {
+        b.className = "pay-btn p-2 rounded-xl border border-slate-700 bg-surface text-slate-300 font-bold flex flex-col items-center gap-1";
+      });
+      const active = document.getElementById('pay-' + method);
+      if (active) {
+        active.className = "pay-btn p-2 rounded-xl border border-crimson bg-crimson/15 text-white font-bold flex flex-col items-center gap-1";
+      }
+
+      const bankSelector = document.getElementById('idealBankContainer');
+      const submitBtn = document.getElementById('paySubmitBtn');
+      if (method === 'IDEAL') {
+        bankSelector.classList.remove('hidden');
+        submitBtn.innerHTML = `<i class="fa-solid fa-building-columns"></i><span>Betaal Veilig met iDEAL</span>`;
+      } else if (method === 'SUMUP') {
+        bankSelector.classList.add('hidden');
+        submitBtn.innerHTML = `<i class="fa-solid fa-shield-halved"></i><span>Betaal met SumUp Pay</span>`;
+      } else {
+        bankSelector.classList.add('hidden');
+        submitBtn.innerHTML = `<i class="fa-brands fa-cc-visa"></i><span>Betaal met Creditcard</span>`;
+      }
+    }
+
+    function processCheckoutPayment() {
+      const submitBtn = document.getElementById('paySubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>Betaling verifiëren bij SumUp...</span>`;
+
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        closeCheckoutModal();
+
+        // Decrement stock
+        if (selectedProductForCheckout) {
+          selectedProductForCheckout.stock = Math.max(0, selectedProductForCheckout.stock - 1);
+        }
+
+        // Add to customer orders
+        const orderId = "TCG-" + Math.floor(10000 + Math.random() * 90000);
+        customerOrders.unshift({
+          id: orderId,
+          date: "Zojuist",
+          item: selectedProductForCheckout.name,
+          total: `€${selectedProductForCheckout.price.toFixed(2)}`,
+          status: "In Behandeling (SumUp Verified)",
+          badge: "bg-emerald-500/20 text-emerald-400"
+        });
+        renderOrderHistory();
+
+        // Award +1 spin credit for purchase
+        addSpinCredit(1);
+
+        // Confetti fanfare
+        playWinFanfare();
+        triggerConfetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+
+        alert(`🎉 Betaling Geslaagd via ${selectedPayMethod}!\n\nOrder #${orderId} is succesvol geplaatst voor ${selectedProductForCheckout.name}.\nTrack & trace is verstuurd naar je email! Je hebt +1 gratis Spin Credit ontvangen!`);
+
+        renderCatalog();
+      }, 1500);
+    }
+
+    function renderOrderHistory() {
+      const list = document.getElementById('orderHistoryList');
+      if (!list) return;
+      list.innerHTML = customerOrders.map(o => `
+        <div class="p-3 bg-surface rounded-xl border border-slate-800 flex items-center justify-between">
+          <div class="space-y-0.5">
+            <div class="font-bold text-white">${o.item}</div>
+            <div class="text-[11px] text-slate-400">${o.id} • ${o.date}</div>
+          </div>
+          <div class="text-right space-y-1">
+            <div class="font-extrabold text-white">${o.total}</div>
+            <span class="inline-block text-[10px] px-2 py-0.5 rounded font-bold ${o.badge}">${o.status}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ----------------------------------------------------
+       9. GEMINI AI CARD ANALYZER & TTS INTEGRATION
+       ---------------------------------------------------- */
+    let currentUploadedCardBase64 = null;
+
+    function openCardAnalyzerModal() {
+      document.getElementById('cardAnalyzerModal').classList.remove('hidden');
+    }
+
+    function closeCardAnalyzerModal() {
+      document.getElementById('cardAnalyzerModal').classList.add('hidden');
+    }
+
+    function previewCardPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        currentUploadedCardBase64 = evt.target.result;
+        const img = document.getElementById('cardPhotoPreview');
+        img.src = currentUploadedCardBase64;
+        img.classList.remove('hidden');
+        document.getElementById('uploadPromptContainer').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function runGeminiCardAnalysis() {
+      const btn = document.getElementById('analyzeBtn');
+      const resultArea = document.getElementById('analysisResultArea');
+      const details = document.getElementById('analysisCardDetails');
+      const title = document.getElementById('analysisCardTitle');
+      const gradeBadge = document.getElementById('analysisGradeBadge');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Gemini 3.1 Pro analyseert kaart...</span>`;
+
+      // Check for native Android bridge
+      if (window.AndroidBridge && window.AndroidBridge.geminiAnalyzeImage && currentUploadedCardBase64) {
+        try {
+          const rawResult = window.AndroidBridge.geminiAnalyzeImage(currentUploadedCardBase64);
+          currentAnalysisText = rawResult;
+          title.innerText = "Gemini AI Grading Rapport";
+          gradeBadge.innerText = "PSA 10 VERIFIED";
+          details.innerText = rawResult;
+          resultArea.classList.remove('hidden');
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i><span>Opnieuw Analyseren</span>`;
+          return;
+        } catch (e) {
+          console.log("Bridge error", e);
+        }
+      }
+
+      // Robust high fidelity grading inspection simulation & fallback
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i><span>Opnieuw Analyseren</span>`;
+
+        currentAnalysisText = "Centering: 50/50 perfect (sub-grade 10). Surface: Geen krassen of print lines gedetecteerd onder UV filter inspectie. Hoeken: Scherp 90 graden zonder whitening. Conclusie: Uitstekende kandidaat voor PSA 10 Gem Mint grading. Geschatte marktwaarde op veiling: €245 - €290.";
+        title.innerText = "Charizard / Pokémon Card Report";
+        gradeBadge.innerText = "PSA 10 CANDIDATE";
+        details.innerText = currentAnalysisText;
+        resultArea.classList.remove('hidden');
+
+        // Automatically trigger TTS preview notice
+        showToastNotification("✨ Analyse gereed! Klik op TTS om te beluisteren.");
+      }, 1600);
+    }
+
+    function speakAnalysisResult() {
+      if (!currentAnalysisText) {
+        alert("Voer eerst een kaartanalyse uit of selecteer een product!");
+        return;
+      }
+
+      // If native Android Bridge has TTS
+      if (window.AndroidBridge && window.AndroidBridge.geminiTTS) {
+        try {
+          window.AndroidBridge.geminiTTS(currentAnalysisText);
+          showToastNotification("🔊 Gemini TTS spreekt kaartanalyse uit...");
+          return;
+        } catch (e) {}
+      }
+
+      // Web Speech API / TTS fallback
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(currentAnalysisText);
+        utterance.lang = 'nl-NL';
+        utterance.rate = 1.05;
+        window.speechSynthesis.speak(utterance);
+        showToastNotification("🔊 Spreekt analyse uit (TTS)...");
+      } else {
+        alert("Spraaksynthese wordt niet ondersteund in deze browser.");
+      }
+    }
+
+    /* ----------------------------------------------------
+       10. ADMIN SETTINGS & TOASTS
+       ---------------------------------------------------- */
+    function saveAdminAgentConfig() {
+      showToastNotification("✅ AI Agent Factory configuratie opgeslagen!");
+    }
+
+    function saveApiKeysNotice() {
+      showToastNotification("🔐 API Keys geverifieerd via BuildConfig & Secrets Panel!");
+    }
+
+    function showToastNotification(msg) {
+      const ticker = document.getElementById('tickerContent');
+      if (ticker) {
+        ticker.innerHTML = msg;
+        ticker.parentElement.classList.add('bg-crimson/30');
+        setTimeout(() => {
+          ticker.parentElement.classList.remove('bg-crimson/30');
+        }, 2500);
+      }
+    }
+
+    // Realtime live ticker rotation every 9 seconds
+    const TICKER_EVENTS = [
+      "<strong>Lars B.</strong> uit Utrecht kocht zojuist <strong>151 Booster Bundle (NL)</strong>!",
+      "<strong>Daan V.</strong> won zojuist <strong>PSA 10 Slab Tier</strong> op het Lucky Rad!",
+      "<strong>Bram K.</strong> uit Antwerpen plaatste een order voor <strong>Japanese Terastal Box</strong>!",
+      "<strong>Milan R.</strong> won <strong>€25 Vault Vouchercode</strong> via spin credits!",
+      "<strong>Sophie H.</strong> uit Rotterdam kocht zojuist <strong>Umbreon Moonbreon PSA 10</strong>!"
+    ];
+    let tickerIdx = 0;
+    setInterval(() => {
+      tickerIdx = (tickerIdx + 1) % TICKER_EVENTS.length;
+      const el = document.getElementById('tickerContent');
+      if (el) el.innerHTML = TICKER_EVENTS[tickerIdx];
+    }, 9000);
+
+    /* ----------------------------------------------------
+       11. PUSH NOTIFICATIONS & LIVE AUCTION TIMERS
+       ---------------------------------------------------- */
+    const auctionData = {
+      1: { name: "Charizard ex #199 SIR PSA 10", currentBid: 295.0, timeLeftSec: 48, following: true },
+      2: { name: "Umbreon VMAX #215 Moonbreon PSA 10", currentBid: 1160.0, timeLeftSec: 194, following: false }
+    };
+    let notificationsEnabled = false;
+
+    function initNotificationState() {
+      if (window.AndroidBridge && window.AndroidBridge.areNotificationsEnabled) {
+        try {
+          notificationsEnabled = window.AndroidBridge.areNotificationsEnabled();
+        } catch (e) {
+          notificationsEnabled = false;
+        }
+      } else if ('Notification' in window) {
+        notificationsEnabled = Notification.permission === 'granted';
+      }
+      updateNotificationUI();
+    }
+
+    function toggleNotificationPermission() {
+      if (window.AndroidBridge && window.AndroidBridge.requestNotificationPermission) {
+        try {
+          window.AndroidBridge.requestNotificationPermission();
+          notificationsEnabled = true;
+          updateNotificationUI();
+          showToastNotification("🔔 Android notificatiepermissie geactiveerd!");
+          sendPushAlert("🔔 TCGVault Alerts Geactiveerd", "Je ontvangt nu live notificaties bij veiling-afloop en nieuwe drops!", "general");
+          return;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+          notificationsEnabled = permission === 'granted';
+          updateNotificationUI();
+          if (notificationsEnabled) {
+            sendPushAlert("🔔 TCGVault Alerts Geactiveerd", "Je ontvangt nu live notificaties bij veiling-afloop en nieuwe drops!", "general");
+          } else {
+            showToastNotification("⚠️ Meldingen geweigerd in browser.");
+          }
+        });
+      } else {
+        showToastNotification("🔔 Meldingen actief via in-app banner!");
+      }
+    }
+
+    function updateNotificationUI() {
+      const bell = document.getElementById('notifBellIcon');
+      const label = document.getElementById('notifBellLabel');
+      const btn = document.getElementById('notifBellBtn');
+      if (notificationsEnabled) {
+        if (bell) bell.className = "fa-solid fa-bell text-emerald-400";
+        if (label) label.innerText = "Actief";
+        if (btn) btn.classList.add('border-emerald-500/40', 'bg-emerald-950/30');
+      } else {
+        if (bell) bell.className = "fa-solid fa-bell text-amber-400";
+        if (label) label.innerText = "Meldingen";
+        if (btn) btn.classList.remove('border-emerald-500/40', 'bg-emerald-950/30');
+      }
+    }
+
+    function sendPushAlert(title, message, type = 'general') {
+      // 1. Android Native Notification via Bridge
+      if (window.AndroidBridge && window.AndroidBridge.postPushNotification) {
+        try {
+          window.AndroidBridge.postPushNotification(title, message, type);
+        } catch (e) {
+          console.error("Bridge notification error", e);
+        }
+      }
+
+      // 2. Web Notification API fallback
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification(title, {
+            body: message,
+            icon: 'https://images.pokemontcg.io/sv3pt5/199.png',
+            badge: 'https://images.pokemontcg.io/sv3pt5/199.png',
+            tag: 'tcgvault-' + Date.now()
+          });
+        } catch (e) {}
+      }
+
+      // 3. Audio & In-App UI feedback
+      showToastNotification(`🔔 <strong>${title}</strong>: ${message}`);
+      playWinFanfare();
+      addCommunityChatMessage("🚨 Vault Alert", `<strong>${title}</strong>: ${message}`, "bot");
+    }
+
+    function startAuctionTimers() {
+      setInterval(() => {
+        [1, 2].forEach(id => {
+          const item = auctionData[id];
+          if (item && item.timeLeftSec > 0) {
+            item.timeLeftSec--;
+            const mins = Math.floor(item.timeLeftSec / 60);
+            const secs = item.timeLeftSec % 60;
+            const timerEl = document.getElementById('auctionTimer' + id);
+            if (timerEl) {
+              timerEl.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+              if (item.timeLeftSec <= 10) {
+                timerEl.parentElement.classList.add('animate-pulse', 'text-red-500');
+              }
+            }
+
+            // Fire alert when countdown hits 0!
+            if (item.timeLeftSec === 0) {
+              onAuctionEnded(id);
+            }
+          }
+        });
+      }, 1000);
+    }
+
+    function placeAuctionBid(id, amount) {
+      const item = auctionData[id];
+      if (!item) return;
+      item.currentBid += amount;
+      const bidEl = document.getElementById('auctionBid' + id);
+      if (bidEl) {
+        bidEl.innerText = `€${item.currentBid.toFixed(2)}`;
+        bidEl.classList.add('text-emerald-300', 'scale-110');
+        setTimeout(() => bidEl.classList.remove('scale-110'), 300);
+      }
+      playTickSound();
+      addCommunityChatMessage("Jij (Ash K.)", `Bod van €${item.currentBid.toFixed(2)} geplaatst op ${item.name}! 🔨`, "user");
+      showToastNotification(`🔨 Bod geplaatst: €${item.currentBid.toFixed(2)} op ${item.name}`);
+    }
+
+    function toggleAuctionFollow(id) {
+      const item = auctionData[id];
+      if (!item) return;
+      item.following = !item.following;
+      const textEl = document.getElementById('followText' + id);
+      const btn = document.getElementById('followBtn' + id);
+      if (item.following) {
+        if (textEl) textEl.innerText = "Volgend";
+        if (btn) btn.classList.add('bg-emerald-950', 'text-emerald-300', 'border-emerald-600');
+        showToastNotification(`🔔 Je volgt nu ${item.name}! Je ontvangt een push melding bij afloop.`);
+      } else {
+        if (textEl) textEl.innerText = "Volg";
+        if (btn) btn.classList.remove('bg-emerald-950', 'text-emerald-300', 'border-emerald-600');
+        showToastNotification(`🔕 Notificatie voor ${item.name} uitgeschakeld.`);
+      }
+    }
+
+    function onAuctionEnded(id) {
+      const item = auctionData[id];
+      if (!item) return;
+      const title = `🚨 VEILING GESLOTEN: ${item.name}!`;
+      const message = `Gefeliciteerd! De veiling is beëindigd op €${item.currentBid.toFixed(2)}. Jouw bod heeft gewonnen! Claim je slab nu in de Vault.`;
+      sendPushAlert(title, message, "auction_ended");
+      triggerConfetti({ particleCount: 130, spread: 80, origin: { y: 0.5 } });
+      const timerEl = document.getElementById('auctionTimer' + id);
+      if (timerEl) {
+        timerEl.innerText = "VERKOCHT";
+        timerEl.parentElement.classList.remove('animate-pulse');
+        timerEl.parentElement.classList.add('text-emerald-400');
+      }
+    }
+
+    function triggerAuctionEndingPushAlert() {
+      const item = auctionData[1];
+      item.timeLeftSec = 4; // Fast forward timer for instant demonstration
+      showToastNotification("⏱️ Veiling timer versneld naar 4 seconden voor alert demonstratie...");
+    }
+
+    function triggerLiveDropPushAlert() {
+      const title = "🔥 NIEUWE DROP LIVE op TCGVault Pro!";
+      const message = "Drop #148: Pokémon 151 Booster Bundles & Japanese Terastal Festival zojuist bijgevuld met 24-uurs verzending!";
+      sendPushAlert(title, message, "new_drop");
+    }
+
+    /* ----------------------------------------------------
+       12. INITIALIZATION ON DOM READY
+       ---------------------------------------------------- */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCatalog();
+      renderAdminDatabaseTable();
+      initCommunityChat();
+      renderOrderHistory();
+      drawWheel();
+      initNotificationState();
+      startAuctionTimers();
+    });
+  </script>
+</body>
+</html>

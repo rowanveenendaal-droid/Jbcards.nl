@@ -1,0 +1,17 @@
+{
+  "name": "JB Cards - Pokémon & TCG Live Vault",
+  "short_name": "JBCards",
+  "description": "Premium Pokémon TCG dropshipping & live vault platform for jbcards.nl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080d1a",
+  "theme_color": "#080d1a",
+  "icons": [
+    {
+      "src": "/images/booster_bundle_151.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
